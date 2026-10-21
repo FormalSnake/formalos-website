@@ -1,5 +1,5 @@
 ---
-import { DISTROS, PRESET_LABELS, DESKTOP_LABELS, preview, type Preset } from '../data/installer';
+import { CHOICES, DISTROS, PRESET_LABELS, DESKTOP_LABELS, preview, tag, type Preset } from '../data/installer';
 import { highlight } from '../lib/highlight';
 import { REPOS } from '../site';
 
@@ -50,11 +50,11 @@ const facts = (d: (typeof DISTROS)[number]) =>
           <fieldset>
             <legend class="mb-2 text-soft">Distro</legend>
             <div class="grid grid-cols-2 gap-px">
-              {DISTROS.map((d) => (
+              {CHOICES.map(([d]) => (
                 <label class="choice-row">
                   <input type="radio" name="distro" value={d.id} checked={d.id === start.distro} class="sr-only" />
-                  <span>{d.name}</span>
-                  {(d.prerelease || d.delivery === 'image') && <span class="text-soft">{d.prerelease ?? 'image'}</span>}
+                  <span data-name>{d.name}</span>
+                  <span data-tag class="text-soft">{tag(d)}</span>
                 </label>
               ))}
             </div>
@@ -233,7 +233,7 @@ const facts = (d: (typeof DISTROS)[number]) =>
 </style>
 
 <script>
-  import { DISTROS, needsDesktop, preview, type Desktop, type Preset } from '../data/installer';
+  import { CHOICES, needsDesktop, preview, resolve, tag, type Distro, type Desktop, type Preset } from '../data/installer';
   import { highlight } from '../lib/highlight';
 
   const form = document.getElementById('picker') as HTMLFormElement | null;
@@ -245,7 +245,7 @@ const facts = (d: (typeof DISTROS)[number]) =>
     const radios = (name: string) => [...form.querySelectorAll<HTMLInputElement>(`input[name="${name}"]`)];
     const value = (name: string) => radios(name).find((r) => r.checked)?.value;
 
-    const facts = (d: (typeof DISTROS)[number]) =>
+    const facts = (d: Distro) =>
       [
         d.release === 'rolling' ? 'Rolling release' : 'Fixed releases',
         d.delivery === 'image' ? 'bootc image' : d.delivery === 'atomic' ? 'Atomic updates' : 'Classic packages',
@@ -256,19 +256,26 @@ const facts = (d: (typeof DISTROS)[number]) =>
     let shown: string[] | undefined;
 
     const sync = () => {
-      const distro = DISTROS.find((d) => d.id === value('distro')) ?? DISTROS[0];
+      const members = CHOICES.find(([d]) => d.id === value('distro')) ?? CHOICES[0];
+      const presets = new Set(members.flatMap((m) => m.presets));
+      const desktops = new Set(members.flatMap((m) => m.desktops));
 
-      for (const r of radios('preset')) r.disabled = !distro.presets.includes(r.value as Preset);
-      if (!distro.presets.includes(value('preset') as Preset)) {
-        radios('preset').find((r) => r.value === distro.presets[0])!.checked = true;
+      for (const r of radios('preset')) r.disabled = !presets.has(r.value as Preset);
+      if (!presets.has(value('preset') as Preset)) {
+        radios('preset').find((r) => r.value === [...presets][0])!.checked = true;
       }
       const preset = value('preset') as Preset;
 
-      for (const r of radios('desktop')) r.disabled = !distro.desktops.includes(r.value as Desktop);
-      if (!distro.desktops.includes(value('desktop') as Desktop)) {
-        radios('desktop').find((r) => r.value === distro.desktops[0])!.checked = true;
+      for (const r of radios('desktop')) r.disabled = !desktops.has(r.value as Desktop);
+      if (!desktops.has(value('desktop') as Desktop)) {
+        radios('desktop').find((r) => r.value === [...desktops][0])!.checked = true;
       }
       desktopSet.disabled = !needsDesktop(preset);
+
+      const distro = resolve(members, value('desktop') as Desktop);
+      const row = radios('distro').find((r) => r.checked)!.parentElement!;
+      row.querySelector('[data-name]')!.textContent = distro.name;
+      row.querySelector('[data-tag]')!.textContent = tag(distro);
 
       reason.firstChild!.textContent = distro.reason;
       reason.querySelector('#facts')!.textContent = facts(distro);

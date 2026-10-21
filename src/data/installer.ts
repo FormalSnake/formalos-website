@@ -37,6 +37,20 @@ export const DISTROS: Distro[] = [
   { id: 'aerynos', name: 'AerynOS', reason: 'Built from scratch by its own tooling. Moss switches each update in atomically, and you can boot back into an earlier state.', release: 'rolling', delivery: 'atomic', signedKernel: false, prerelease: 'alpha', presets: ['desktop'], desktops: ['gnome', 'kde', 'cosmic'] },
 ];
 
+// Catalog entries that are one system in different desktops share a row in the hero, and the desktop
+// choice picks the entry. The installer itself lists them separately.
+const SIBLINGS = [['aeon', 'kalpa-desktop']];
+
+export const CHOICES: Distro[][] = DISTROS.filter((d) => !SIBLINGS.some((g) => g.slice(1).includes(d.id))).map(
+  (d) => SIBLINGS.find((g) => g[0] === d.id)?.map((id) => DISTROS.find((x) => x.id === id)!) ?? [d],
+);
+
+export function resolve(members: Distro[], desktop?: Desktop): Distro {
+  return members.find((m) => desktop && m.desktops.includes(desktop)) ?? members[0];
+}
+
+export const tag = (d: Distro) => d.prerelease ?? (d.delivery === 'image' ? 'image' : '');
+
 export const PRESET_LABELS: Record<Preset, string> = {
   minimal: 'Minimal',
   desktop: 'Desktop',
