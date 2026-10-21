@@ -1,7 +1,8 @@
 ---
 import { CHOICES, DISTROS, PRESET_LABELS, DESKTOP_LABELS, preview, tag, type Preset } from '../data/installer';
 import { highlight } from '../lib/highlight';
-import { REPOS } from '../site';
+import { Download } from '@lucide/astro';
+import { ISO, REPOS } from '../site';
 
 const start = { distro: 'fedora', preset: 'desktop' as Preset, desktop: 'gnome' as const, hostname: 'g815', user: 'kyan' };
 const first = DISTROS[0];
@@ -25,8 +26,9 @@ const facts = (d: (typeof DISTROS)[number]) =>
     <p class="rise mt-6 max-w-[34ch] text-lead leading-snug text-soft" style="--d: 80ms">
       Describe your machines once, in code. FormalSpec installs them on the distro you pick and keeps them identical.
     </p>
-    <div class="rise mt-8" style="--d: 160ms">
-      <a class="btn" href={REPOS.formalspec}>Explore FormalSpec on GitHub</a>
+    <div class="rise mt-8 flex flex-wrap items-center gap-x-6 gap-y-3" style="--d: 160ms">
+      <a class="btn" href={ISO.url}><Download size={18} aria-hidden="true" />Download the ISO</a>
+      <a class="link py-2" href={REPOS.formalspec}>Explore FormalSpec on GitHub</a>
     </div>
     <p id="picker-note" class="rise mt-8 max-w-[38ch] text-small text-soft" style="--d: 240ms">
       Try it: pick a distro and watch the spec change.

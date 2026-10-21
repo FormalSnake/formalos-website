@@ -14,12 +14,6 @@ const escape = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').rep
 const paint = (screen: string) =>
   escape(screen.replace(/\n$/, '')).replace(/[▌✓●⠧]/g, (c) => `<span class="mark">${c}</span>`);
 
-// The ISO ships as a release asset, so the download only goes live once a release exists. Redeploy after
-// tagging to flip it.
-const released = await fetch('https://api.github.com/repos/FormalStudio/formalspec/releases/latest')
-  .then((r) => r.ok)
-  .catch(() => false);
-
 const steps = [
   { id: 'system', title: 'Choose a system', body: `${DISTROS.length} distros, each with what its release model and kernel mean for you.`, screen: system },
   { id: 'disk', title: 'Choose a disk', body: 'Encrypt it with LUKS2, and get btrfs subvolumes for each system, your home and swap.', screen: disk },
@@ -42,19 +36,13 @@ const steps = [
       <p class="mt-4 max-w-[60ch] text-small text-soft">
         {DISTROS.length} distros, from Fedora and openSUSE to Arch, Void and AerynOS.
       </p>
-      {released ? (
-        <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
-          <a class="btn" href={ISO.url}><Download size={18} aria-hidden="true" />Download the ISO</a>
-          <p class="text-small text-soft">
-            x86_64, about 1.2 GB. Boots from USB with Secure Boot on.{' '}
-            <a class="link" href={ISO.checksums}>SHA256SUMS</a>, <a class="link" href={ISO.releases}>all versions</a>
-          </p>
-        </div>
-      ) : (
-        <p class="mt-4 max-w-[60ch] text-small text-soft">
-          The bootable ISO arrives with the first release, on <a class="link" href={ISO.releases}>GitHub</a>.
+      <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+        <a class="btn" href={ISO.url}><Download size={18} aria-hidden="true" />Download the ISO</a>
+        <p class="text-small text-soft">
+          x86_64, about 1.2 GB. Boots from USB with Secure Boot on.{' '}
+          <a class="link" href={ISO.checksums}>SHA256SUMS</a>, <a class="link" href={ISO.releases}>all versions</a>
         </p>
-      )}
+      </div>
     </div>
 
     <div class="tour reveal mt-12 grid grid-cols-1 gap-8 lg:mt-14 lg:grid-cols-12 lg:gap-x-10" style="--d: 100ms">
