@@ -1,109 +1,134 @@
 ---
-import { DISTROS, PRESET_LABELS, DESKTOP_LABELS } from '../data/installer';
+import { DISTROS } from '../data/installer';
+import system from '../data/screens/system.txt?raw';
+import disk from '../data/screens/disk-encrypted.txt?raw';
+import running from '../data/screens/install-running.txt?raw';
+import done from '../data/screens/install-done.txt?raw';
+import host from '../data/screens/host.txt?raw';
 
-const bazzite = DISTROS.find((d) => d.id === 'bazzite')!;
-const offers = bazzite.presets.map((p) => PRESET_LABELS[p].toLowerCase()).join(' and ');
-const facts = [
-  bazzite.release === 'rolling' ? 'Rolling release' : 'Fixed releases',
-  bazzite.delivery === 'image' ? 'bootc image' : 'Classic packages',
-  bazzite.signedKernel ? 'Signed kernel' : 'Unsigned kernel',
-];
+// Snapshots from crates/fspec-install/tests/screens (formalspec, branch installer), rendered by the
+// installer's own test suite against its demo backend.
+const escape = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const paint = (screen: string) =>
+  escape(screen.replace(/\n$/, '')).replace(/[▌✓●⠧]/g, (c) => `<span class="mark">${c}</span>`);
 
-const pick = [
-  ['Distro', bazzite.name],
-  ['Preset', PRESET_LABELS.gaming.toLowerCase()],
-  ['Desktop', DESKTOP_LABELS.kde],
+const steps = [
+  { id: 'system', title: 'Choose a system', body: `${DISTROS.length} distros, each with what its release model and kernel mean for you.`, screen: system },
+  { id: 'disk', title: 'Choose a disk', body: 'Encrypt it with LUKS2, and get btrfs subvolumes for each system, your home and swap.', screen: disk },
+  { id: 'install', title: 'Install', body: 'Twelve named steps with a live log, from partitions to bootloader.', screen: running },
+  { id: 'done', title: 'Restart into it', body: 'Your spec is applied before the first login.', screen: done },
+  { id: 'restore', title: 'Or restore a machine', body: 'Clone your spec repo and pick a host you already described.', screen: host },
 ];
-const disk = [
-  ['Install on', 'Whole disk'],
-  ['Device', '/dev/nvme0n1, 1 TB'],
-  ['LUKS2 passphrase', '••••••••••••'],
-  ['Swap', '8 GiB'],
-];
-const restore = [
-  ['Git URL', 'git@github.com:you/machines.git'],
-  ['Authentication', 'SSH key'],
-];
-const hosts = [
-  { name: 'g815', platform: 'x86_64-linux', distro: 'bazzite', users: 'kyan', unsupported: null },
-  { name: 'e1504g', platform: 'x86_64-linux', distro: 'bazzite', users: 'kyan', unsupported: null },
-  { name: 'macbook', platform: 'aarch64-darwin', distro: '', users: 'kyan', unsupported: 'This ISO installs x86_64 Linux hosts; this one is aarch64-darwin.' },
-];
-const mono = (label: string) => label === 'Device' || label === 'Git URL';
 ---
 
-<section id="installer" aria-labelledby="installer-title" class="pt-32 lg:pt-48">
+<section id="installer" aria-labelledby="installer-title" class="pt-28 lg:pt-36">
   <div class="mx-auto max-w-[90rem] px-5 sm:px-10">
     <div class="reveal">
       <h2 id="installer-title" class="text-[length:var(--text-title)] font-medium leading-[1.05] tracking-[-0.02em]">
         The installer
       </h2>
-      <p class="mt-5 max-w-[44ch] text-lead leading-snug text-soft">
-        A bootable image that installs any of ten distros with a preset, or restores the machines you already described in git.
+      <p class="mt-4 max-w-[46ch] text-lead leading-snug text-soft">
+        Pick a distro and a preset, and boot into a machine FormalSpec manages from day one. Or point it at your spec repo
+        and get your machines back.
       </p>
-      <p class="mt-5 max-w-[56ch] text-small text-soft">
-        <span class="font-medium text-ink">In progress.</span>{' '}
-        The choice model, the distro catalog, the spec.star preview and a backend that reads disks, firmware, locales and keyboard layouts and clones a spec repo to restore are built. The full-screen front end and the bootable image are not. The plan is for the installer to boot from a Debian-based live image.
+      <p class="mt-4 max-w-[60ch] text-small text-soft">
+        {DISTROS.length} distros, from Fedora and Bazzite to Arch, Void and AerynOS. Coming soon as a bootable image.
       </p>
     </div>
 
-    <div class="mt-14 flex flex-col gap-6 lg:ml-[33.333%] lg:max-w-[35rem] lg:gap-[5.5rem] lg:pl-14 lg:box-content">
-      <div class="reveal">
-        <h3 class="text-lead font-medium leading-snug tracking-[-0.01em]">First, pick a distro and a preset.</h3>
-        <dl class="mt-4 grid gap-2 rounded-[8px] bg-raised p-5 text-small">
-          {pick.map(([k, v]) => (
-            <div class="grid grid-cols-[9rem_1fr] gap-3"><dt class="text-soft">{k}</dt><dd>{v}</dd></div>
-          ))}
-        </dl>
-        <div data-ui class="mt-4 rounded-[10px] bg-[#1b1b1b] p-4 text-ink lg:ml-14">
-          <p>{bazzite.reason}</p>
-          <p class="mt-2 text-soft">{facts.join(', ')}</p>
-          <p class="mt-2 text-soft">The catalog fixes which presets each distro offers. {bazzite.name} offers {offers}.</p>
-        </div>
+    <div class="tour reveal mt-12 grid grid-cols-1 gap-8 lg:mt-14 lg:grid-cols-12 lg:gap-x-10" style="--d: 100ms">
+      <div role="tablist" aria-label="Installer screens" aria-orientation="vertical" class="flex gap-1 overflow-x-auto lg:col-span-4 lg:flex-col lg:overflow-visible">
+        {steps.map((s, i) => (
+          <button
+            type="button"
+            role="tab"
+            id={`tab-${s.id}`}
+            aria-controls={`screen-${s.id}`}
+            aria-selected={i === 0 ? 'true' : 'false'}
+            tabindex={i === 0 ? 0 : -1}
+            class="step shrink-0 rounded-[8px] px-4 py-3 text-left"
+          >
+            <span class="block text-ink">{s.title}</span>
+            <span class="mt-1 hidden text-small text-soft lg:block">{s.body}</span>
+          </button>
+        ))}
       </div>
 
-      <div class="reveal">
-        <h3 class="text-lead font-medium leading-snug tracking-[-0.01em]">Then choose a disk.</h3>
-        <dl class="mt-4 grid gap-2 rounded-[8px] bg-raised p-5 text-small">
-          {disk.map(([k, v]) => (
-            <div class="grid grid-cols-[9rem_1fr] gap-3"><dt class="text-soft">{k}</dt><dd class:list={[mono(k) && 'font-mono']}>{v}</dd></div>
-          ))}
-        </dl>
-        <div data-ui class="mt-4 rounded-[10px] bg-[#1b1b1b] p-4 text-ink lg:ml-14">
-          <p>The installer runs <span class="font-mono">fspec disk init</span>, which writes:</p>
-          <ul class="mt-2 grid gap-1 text-soft">
-            <li>A GPT disk with a 2 GiB EFI system partition.</li>
-            <li>A LUKS2 container holding the rest of the disk.</li>
-            <li>One btrfs filesystem with subvolumes for each root, <span class="font-mono">@home</span> and <span class="font-mono">@swap</span>.</li>
-          </ul>
-          <p class="mt-3">Personal files under <span class="font-mono">/home</span> are protected.</p>
-        </div>
-      </div>
-
-      <div class="reveal">
-        <h3 class="text-lead font-medium leading-snug tracking-[-0.01em]">Or restore a machine you already wrote down.</h3>
-        <dl class="mt-4 grid gap-2 rounded-[8px] bg-raised p-5 text-small">
-          {restore.map(([k, v]) => (
-            <div class="grid grid-cols-[9rem_1fr] gap-3"><dt class="text-soft">{k}</dt><dd class:list={[mono(k) && 'break-all font-mono']}>{v}</dd></div>
-          ))}
-        </dl>
-        <div data-ui class="mt-4 rounded-[10px] bg-[#1b1b1b] p-4 text-ink lg:ml-14 lg:w-[47.5rem] lg:max-w-none">
-          <p class="mb-3 font-medium">Hosts found in the repo</p>
-          <ul class="grid gap-3">
-            {hosts.map((h) => (
-              <li class="flex flex-wrap gap-x-3 gap-y-0.5 sm:grid sm:gap-x-4 sm:grid-cols-[6rem_9.5rem_1fr_5rem]">
-                <span class="w-full font-medium sm:w-auto">{h.name}</span>
-                <span class="text-soft">{h.platform}</span>
-                <span class="text-soft">{h.distro}</span>
-                <span class="text-soft">{h.users}</span>
-                {h.unsupported && (
-                  <p class="w-full text-alert sm:col-span-4"><span class="font-medium">Can't install from here.</span> {h.unsupported}</p>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
+      <div data-ui class="screen-frame min-w-0 rounded-[10px] bg-[#121212] p-4 sm:p-5 lg:col-span-8">
+        {steps.map((s, i) => (
+          <pre
+            role="tabpanel"
+            id={`screen-${s.id}`}
+            aria-labelledby={`tab-${s.id}`}
+            hidden={i !== 0}
+            class="screen m-0"
+            set:html={paint(s.screen)}
+          />
+        ))}
       </div>
     </div>
   </div>
 </section>
+
+<style>
+  .screen-frame {
+    container-type: inline-size;
+  }
+
+  .screen {
+    font-family: var(--font-mono);
+    font-size: calc(100cqw / 80 / 0.6);
+    line-height: 1.3;
+    white-space: pre;
+    color: var(--ink);
+    overflow: hidden;
+  }
+
+  .screen :global(.mark) {
+    color: var(--accent-text);
+  }
+
+  .step {
+    transition: background-color 150ms ease;
+  }
+
+  .step[aria-selected='true'] {
+    background: var(--raised);
+  }
+
+  .step:focus-visible {
+    outline: 2px solid var(--accent-text);
+    outline-offset: 1px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .step[aria-selected='false']:hover {
+      background: oklch(1 0 0 / 0.04);
+    }
+  }
+</style>
+
+<script>
+  const tabs = [...document.querySelectorAll<HTMLButtonElement>('#installer [role="tab"]')];
+
+  const select = (tab: HTMLButtonElement) => {
+    for (const t of tabs) {
+      const on = t === tab;
+      t.setAttribute('aria-selected', String(on));
+      t.tabIndex = on ? 0 : -1;
+      document.getElementById(t.getAttribute('aria-controls')!)!.hidden = !on;
+    }
+  };
+
+  for (const [i, tab] of tabs.entries()) {
+    tab.addEventListener('click', () => select(tab));
+    tab.addEventListener('keydown', (e) => {
+      const step = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[e.key];
+      if (!step) return;
+      e.preventDefault();
+      const next = tabs[(i + step + tabs.length) % tabs.length];
+      select(next);
+      next.focus();
+    });
+  }
+</script>

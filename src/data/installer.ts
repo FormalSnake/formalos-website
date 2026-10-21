@@ -1,15 +1,16 @@
-// Mirrors crates/fspec-install/src/catalog.rs and spec.rs in formalspec (branch installer).
+// Mirrors crates/fspec-install/src/catalog.rs, model.rs and spec.rs in formalspec (branch installer).
 // Keep both in step with the Rust source: the hero claims this is the installer's real output.
 
 export type Preset = 'minimal' | 'desktop' | 'gaming' | 'server';
-export type Desktop = 'gnome' | 'kde';
+export type Desktop = 'gnome' | 'kde' | 'cosmic';
 
 export interface Distro {
   id: string;
   name: string;
   reason: string;
   release: 'fixed' | 'rolling';
-  delivery: 'classic' | 'image';
+  delivery: 'classic' | 'image' | 'atomic';
+  alpha?: boolean;
   signedKernel: boolean;
   presets: Preset[];
   desktops: Desktop[];
@@ -28,6 +29,7 @@ export const DISTROS: Distro[] = [
   { id: 'debian', name: 'Debian', reason: 'Stable for years at a time. Nothing changes until you decide to upgrade.', release: 'fixed', delivery: 'classic', signedKernel: true, presets: ALL, desktops: ['gnome', 'kde'] },
   { id: 'void', name: 'Void Linux', reason: 'An independent rolling distro with runit and a package manager that stays out of the way.', release: 'rolling', delivery: 'classic', signedKernel: false, presets: ALL, desktops: ['kde', 'gnome'] },
   { id: 'void-musl', name: 'Void Linux (musl)', reason: 'Void built on musl instead of glibc: smaller and simpler, but some prebuilt apps will not run.', release: 'rolling', delivery: 'classic', signedKernel: false, presets: ['minimal', 'desktop', 'server'], desktops: ['kde', 'gnome'] },
+  { id: 'aerynos', name: 'AerynOS', reason: 'Built from scratch by its own tooling. Moss switches each update in atomically, and you can boot back into an earlier state.', release: 'rolling', delivery: 'atomic', signedKernel: false, alpha: true, presets: ['desktop'], desktops: ['gnome', 'kde', 'cosmic'] },
 ];
 
 export const PRESET_LABELS: Record<Preset, string> = {
@@ -37,7 +39,7 @@ export const PRESET_LABELS: Record<Preset, string> = {
   server: 'Server',
 };
 
-export const DESKTOP_LABELS: Record<Desktop, string> = { gnome: 'GNOME', kde: 'KDE' };
+export const DESKTOP_LABELS: Record<Desktop, string> = { gnome: 'GNOME', kde: 'KDE Plasma', cosmic: 'COSMIC' };
 
 export function needsDesktop(preset: Preset) {
   return preset === 'desktop' || preset === 'gaming';
@@ -51,17 +53,20 @@ export interface Draft {
   user?: string;
 }
 
-// spec.rs preview(), line for line. The installer only writes the account when both names are set.
+// spec.rs preview(), line for line. The hero has no locale step, so those lines stay out, as they do
+// in the installer before you reach it. The account lines appear once both names are set.
 export function preview(d: Draft): string {
-  let out = '# Written by the FormalSpec installer. Edit it, then run `fspec apply`.\n';
-  out += `load("//modules/${d.preset}.star", "${d.preset}")\n`;
+  let out = "# This machine's spec. `fspec plan` shows what a change would do, `fspec apply` makes it so.\n";
+  out += `load("//modules/${d.preset}.star", "modules", "system")\n`;
   out += '\nhosts = [\n    host(\n';
   const hasAccount = Boolean(d.hostname && d.user);
-  out += `        name = "${hasAccount ? d.hostname : '…'}",\n        platform = "x86_64-linux",\n`;
+  if (hasAccount) out += `        name = "${d.hostname}",\n`;
+  out += '        platform = "x86_64-linux",\n';
   const args = d.desktop ? `, desktop = "${d.desktop}"` : '';
-  out += `        modules = [${d.preset}("${d.distro}"${args})],\n`;
+  out += `        system = system("${d.distro}"${args}),\n        modules = modules("${d.distro}"${args}),\n`;
   if (hasAccount) {
-    out += `        users = [user("${d.user}", uid = 1000, groups = ["wheel"])],\n`;
+    const group = d.distro === 'debian' || d.distro === 'ubuntu' ? 'sudo' : 'wheel';
+    out += `        users = [user("${d.user}", uid = 1000, groups = ["${group}"])],\n`;
   }
   out += '        protect = ["/home"],\n    ),\n]\n';
   return out;

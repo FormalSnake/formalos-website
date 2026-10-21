@@ -53,20 +53,16 @@ fspec gc --older-than 14d`;
 const initSystems = ['systemd', 'runit', 'OpenRC', 'dinit', 's6', 'launchd'];
 ---
 
-<section id="formalspec" aria-labelledby="formalspec-title" class="mx-auto max-w-[90rem] px-5 pt-32 sm:px-10 lg:pt-48">
+<section id="formalspec" aria-labelledby="formalspec-title" class="mx-auto max-w-[90rem] px-5 pt-28 sm:px-10 lg:pt-36">
   <div class="reveal">
     <h2 id="formalspec-title" class="text-[length:var(--text-title)] leading-[1.05] tracking-[-0.02em]">FormalSpec</h2>
     <p class="mt-4 max-w-[40ch] text-lead leading-snug text-soft">
       Declare your machines in code and keep them identical, on any Linux distro and on macOS.
     </p>
-    <p class="mt-5 max-w-[60ch] text-small leading-relaxed text-soft">
-      <span class="font-medium text-ink">Early.</span>{" "}
-      Apply, drift repair, removal, rollback and gc have run for real on macOS and on Fedora 44, Arch, Debian 13 and Void
-      in containers. bootc images and <span class="font-mono">fspec switch</span> have only run against temp roots so far.
-    </p>
+    <p class="mt-4 max-w-[60ch] text-small text-soft">Tested on macOS, and on Fedora 44, Arch, Debian 13 and Void.</p>
   </div>
 
-  <div id="fspec-field" data-ui class="reveal mt-14 flex flex-col lg:mt-20">
+  <div id="fspec-field" data-ui class="reveal mt-12 flex flex-col lg:mt-14">
     <input
       id="fspec-input"
       class="fspec-input"
@@ -82,13 +78,13 @@ const initSystems = ['systemd', 'runit', 'OpenRC', 'dinit', 's6', 'launchd'];
     <div
       id="fspec-answer"
       aria-live="polite"
-      class="mt-12 w-full max-w-[35rem] rounded-[8px] bg-raised p-5 text-[0.875rem] leading-snug"
+      class="mt-8 w-full max-w-[35rem] rounded-[8px] bg-raised p-5 text-[0.875rem] leading-snug"
     >
       <p id="fspec-syntax" class="font-mono text-ink">{first.syntax}</p>
       <p id="fspec-does" class="mt-2 text-soft">{first.does}</p>
     </div>
 
-    <div id="fspec-examples" class="mt-10 flex flex-wrap gap-2 lg:mt-auto lg:gap-x-8 lg:pt-12">
+    <div id="fspec-examples" class="mt-6 flex flex-wrap gap-2 lg:gap-x-8">
       {
         examples.map((e) => (
           <button
@@ -104,51 +100,44 @@ const initSystems = ['systemd', 'runit', 'OpenRC', 'dinit', 's6', 'launchd'];
     <script id="fspec-commands" type="application/json" set:html={JSON.stringify(commands)} />
   </div>
 
-  <div class="mt-24 lg:mt-32">
+  <div class="mt-24 grid grid-cols-1 gap-14 lg:mt-28 lg:grid-cols-2 lg:gap-x-10">
     <h3 class="sr-only">What it manages</h3>
 
-    <div class="reveal grid gap-6 lg:grid-cols-12 lg:gap-x-10">
-      <div class="lg:col-span-5">
-        <h3 class="text-lead tracking-[-0.01em]">Files</h3>
-        <p class="mt-2 max-w-[34ch] text-soft">
-          Written, linked, seeded once, or merged key by key into a file the app also writes.
-        </p>
-      </div>
-      <pre data-ui class="code m-0 min-w-0 overflow-x-auto rounded-[8px] bg-raised p-5 lg:col-span-7"><code set:html={highlight(filesSnippet)} /></pre>
+    <div class="reveal lg:row-span-3">
+      <h3 class="text-lead tracking-[-0.01em]">Files and hosts</h3>
+      <p class="mt-2 max-w-[40ch] text-soft">
+        Write, link or seed a file once, or merge your keys into a file the app also writes. Hosts are plain functions, so
+        a second laptop is one line.
+      </p>
+      <pre data-ui class="code mt-6 m-0 min-w-0 overflow-x-auto rounded-[8px] bg-raised p-5"><code set:html={highlight(filesSnippet)} /></pre>
     </div>
 
-    <div class="reveal mt-16 grid gap-5 lg:mt-24 lg:grid-cols-12 lg:gap-x-10">
-      <div class="lg:col-span-5">
-        <h3 class="text-lead tracking-[-0.01em]">Services</h3>
-        <p class="mt-2 max-w-[34ch] text-soft">One description, rendered for each init system.</p>
-      </div>
-      <ul class="flex flex-wrap gap-x-7 gap-y-1 text-lead text-ink lg:col-span-7 lg:self-center">
+    <div class="reveal">
+      <h3 class="text-lead tracking-[-0.01em]">Services</h3>
+      <p class="mt-2 max-w-[40ch] text-soft">Describe a service once, and FormalSpec writes it for each init system.</p>
+      <ul class="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-lead text-ink">
         {initSystems.map((s) => <li>{s}</li>)}
       </ul>
     </div>
 
-    <div class="reveal mt-16 grid gap-6 lg:mt-24 lg:grid-cols-12 lg:gap-x-10">
-      <div class="lg:col-span-5">
-        <h3 class="text-lead tracking-[-0.01em]">System</h3>
-        <p class="mt-2 max-w-[34ch] text-soft">
-          A bootc image on Fedora Atomic, Bazzite and friends, or the distro's package manager elsewhere.
-        </p>
-      </div>
-      <pre data-ui class="code m-0 min-w-0 overflow-x-auto rounded-[8px] bg-raised p-5 lg:col-span-7 lg:self-start"><code set:html={highlight(systemSnippet)} /></pre>
+    <div class="reveal">
+      <h3 class="text-lead tracking-[-0.01em]">System</h3>
+      <p class="mt-2 max-w-[40ch] text-soft">
+        Run a bootc image on Fedora Atomic, Bazzite and friends, or the distro's own package manager everywhere else.
+      </p>
+      <pre data-ui class="code mt-4 m-0 min-w-0 overflow-x-auto rounded-[8px] bg-raised p-5"><code set:html={highlight(systemSnippet)} /></pre>
     </div>
 
-    <div class="reveal mt-16 grid gap-6 lg:mt-24 lg:grid-cols-12 lg:gap-x-10">
-      <div class="lg:col-span-5">
-        <h3 class="text-lead tracking-[-0.01em]">Cleanup</h3>
-        <p class="mt-2 max-w-[34ch] text-soft">
-          Removing a line removes the package, its services, its files and its app data, and rollback brings them back.
-        </p>
-      </div>
-      <pre data-ui class="code m-0 w-fit min-w-0 max-w-full overflow-x-auto rounded-[8px] bg-raised p-5 lg:col-span-7 lg:self-start"><code set:html={highlight(cleanupSnippet)} /></pre>
+    <div class="reveal">
+      <h3 class="text-lead tracking-[-0.01em]">Cleanup</h3>
+      <p class="mt-2 max-w-[40ch] text-soft">
+        Delete a line and the package goes, with its services, files and app data. Changed your mind? Roll back.
+      </p>
+      <pre data-ui class="code mt-4 m-0 w-fit min-w-0 max-w-full overflow-x-auto rounded-[8px] bg-raised p-5"><code set:html={highlight(cleanupSnippet)} /></pre>
     </div>
   </div>
 
-  <p class="reveal mt-16 lg:mt-24">
+  <p class="reveal mt-14">
     <a class="link inline-block py-2" href={REPOS.formalspec}>Read the FormalSpec README</a>
   </p>
 </section>

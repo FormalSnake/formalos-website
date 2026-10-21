@@ -8,30 +8,36 @@ const first = DISTROS[0];
 const facts = (d: (typeof DISTROS)[number]) =>
   [
     d.release === 'rolling' ? 'Rolling release' : 'Fixed releases',
-    d.delivery === 'image' ? 'bootc image' : 'Classic packages',
+    d.delivery === 'image' ? 'bootc image' : d.delivery === 'atomic' ? 'Atomic updates' : 'Classic packages',
     d.signedKernel ? 'Signed kernel' : 'Unsigned kernel',
   ].join(', ');
 ---
 
-<section aria-labelledby="hero-title" class="mx-auto max-w-[90rem] px-5 sm:px-10">
-  <div class="pt-14 sm:pt-24 lg:pt-28 lg:max-w-[46rem]">
-    <h1 id="hero-title" class="rise text-[length:var(--text-display)] leading-[1.02] tracking-[-0.035em]">
+<section
+  aria-labelledby="hero-title"
+  class="mx-auto max-w-[90rem] px-5 sm:px-10 xl:grid xl:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] xl:items-center xl:gap-x-14 xl:pt-10"
+>
+  <div class="pt-14 sm:pt-20 xl:pt-0 xl:pb-12">
+    <h1 id="hero-title" class="rise text-[length:var(--text-display)] leading-[1.02] tracking-[-0.035em] xl:text-[clamp(3.5rem,1.5rem+3vw,4.75rem)]">
       One system, any distro under it
     </h1>
-    <p class="rise mt-6 max-w-[40ch] text-lead leading-snug text-soft" style="--d: 80ms">
+    <p class="rise mt-6 max-w-[34ch] text-lead leading-snug text-soft" style="--d: 80ms">
       Describe your machines once, in code. FormalSpec installs them on the distro you pick and keeps them identical.
     </p>
     <div class="rise mt-8" style="--d: 160ms">
-      <a class="btn" href={REPOS.formalspec}>Read FormalSpec on GitHub</a>
+      <a class="btn" href={REPOS.formalspec}>Explore FormalSpec on GitHub</a>
     </div>
+    <p id="picker-note" class="rise mt-8 max-w-[38ch] text-small text-soft" style="--d: 240ms">
+      Try it: the distros and the file come straight from the installer's source.
+    </p>
   </div>
 
-  <div class="stage shutter relative mt-14 -mx-5 bg-accent pt-[calc(var(--tab-h)+1rem)] sm:-mx-10 lg:-mt-24 lg:ml-[33.333%] lg:mr-[calc(50%-50vw)] lg:pt-[calc(var(--tab-h)+3.5rem)] lg:pl-14">
-    <div class="settle px-4 lg:px-0">
+  <div class="stage shutter relative mt-12 -mx-5 bg-accent pt-[calc(var(--tab-h)+1rem)] sm:-mx-10 xl:mx-0 xl:mt-0 xl:mr-[calc(-2.5rem_-_(100vw_-_min(100vw,90rem))_/_2)] xl:pt-[calc(var(--tab-h)+1.5rem)] xl:px-10">
+    <div class="settle px-4 sm:px-10 xl:px-0">
       <form
         id="picker"
         data-ui
-        class="w-full max-w-[42rem] rounded-t-[10px] bg-[#1b1b1b] text-ink"
+        class="w-full max-w-[50rem] rounded-t-[10px] bg-[#1b1b1b] text-ink"
         aria-describedby="picker-note"
       >
         <div class="flex items-center justify-between px-4 py-3 text-soft">
@@ -39,22 +45,22 @@ const facts = (d: (typeof DISTROS)[number]) =>
           <span>spec.star</span>
         </div>
 
-        <div class="grid gap-x-4 gap-y-5 px-4 pb-4 sm:grid-cols-[13.5rem_1fr]">
+        <div class="grid gap-x-5 gap-y-5 px-4 pb-4 sm:grid-cols-[minmax(0,22rem)_1fr]">
           <fieldset>
             <legend class="mb-2 text-soft">Distro</legend>
-            <div class="grid grid-cols-2 gap-px sm:grid-cols-1">
+            <div class="grid grid-cols-2 gap-px">
               {DISTROS.map((d) => (
                 <label class="choice-row">
                   <input type="radio" name="distro" value={d.id} checked={d.id === start.distro} class="sr-only" />
                   <span>{d.name}</span>
-                  {d.delivery === 'image' && <span class="text-soft">image</span>}
+                  {(d.alpha || d.delivery !== 'classic') && <span class="text-soft">{d.alpha ? 'alpha' : 'image'}</span>}
                 </label>
               ))}
             </div>
           </fieldset>
 
-          <div class="flex flex-col gap-5">
-            <p id="reason" class="min-h-[3.9em] text-[0.875rem] leading-snug text-ink">
+          <div class="flex flex-col gap-4">
+            <p id="reason" class="min-h-[4.6em] text-[0.875rem] leading-snug text-ink">
               {first.reason}
               <span id="facts" class="mt-1.5 block text-soft">{facts(first)}</span>
             </p>
@@ -96,13 +102,10 @@ const facts = (d: (typeof DISTROS)[number]) =>
           </div>
         </div>
 
-        <pre class="code m-0 overflow-x-auto bg-[#121212] px-4 pt-4 pb-10"><code id="spec" set:html={highlight(preview(start))} /></pre>
+        <pre class="code m-0 overflow-x-auto bg-[#121212] px-4 py-4"><code id="spec" set:html={highlight(preview(start))} /></pre>
       </form>
     </div>
   </div>
-  <p id="picker-note" class="mt-4 max-w-[60ch] text-small text-soft lg:ml-[33.333%] lg:pl-14">
-    The distro list and the file above come from the installer's source. The installer itself has no release yet.
-  </p>
 </section>
 
 <style>
@@ -112,7 +115,7 @@ const facts = (d: (typeof DISTROS)[number]) =>
     clip-path: polygon(0 0, var(--tab-w) 0, calc(var(--tab-w) + var(--tab-h)) var(--tab-h), 100% var(--tab-h), 100% 100%, 0 100%);
   }
 
-  @media (min-width: 64rem) {
+  @media (min-width: 80rem) {
     .stage {
       --tab-w: 14rem;
       --tab-h: 3rem;
@@ -244,7 +247,7 @@ const facts = (d: (typeof DISTROS)[number]) =>
     const facts = (d: (typeof DISTROS)[number]) =>
       [
         d.release === 'rolling' ? 'Rolling release' : 'Fixed releases',
-        d.delivery === 'image' ? 'bootc image' : 'Classic packages',
+        d.delivery === 'image' ? 'bootc image' : d.delivery === 'atomic' ? 'Atomic updates' : 'Classic packages',
         d.signedKernel ? 'Signed kernel' : 'Unsigned kernel',
       ].join(', ');
 
