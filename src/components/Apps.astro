@@ -44,77 +44,73 @@ const apps = [
 
 <section id="apps" aria-labelledby="apps-title" class="pt-28 lg:pt-36">
   <div class="mx-auto max-w-[90rem] px-5 sm:px-10">
-    <div class="ledger xl:ml-[var(--ledger-left)] max-w-[35rem]">
-      <div class="reveal">
-        <h2 id="apps-title" class="text-[length:var(--text-title)] leading-[1.08] tracking-[-0.02em]">
-          Apps that feel native
-        </h2>
-        <p class="mt-5 max-w-[44ch] text-lead leading-snug text-soft">
-          Describe a window once, and each OS draws it with its own widgets: AppKit on macOS, GPUI on Linux, Windows and the web.
+    <div class="reveal max-w-[35rem]">
+      <h2 id="apps-title" class="text-[length:var(--text-title)] leading-[1.08] tracking-[-0.02em]">
+        Apps that feel native
+      </h2>
+      <p class="mt-5 max-w-[44ch] text-lead leading-snug text-soft">
+        Describe a window once, and each OS draws it with its own widgets: AppKit on macOS, GPUI on Linux, Windows and the web.
+      </p>
+    </div>
+
+    <div class="ledger mt-8 xl:grid xl:grid-cols-2 xl:items-start xl:gap-x-16" data-active="0">
+      <div class="max-w-[35rem] xl:max-w-none">
+        <ul class="list flex flex-col gap-10 xl:gap-0 reveal" style="--d: 100ms">
+          {apps.map((app, i) => (
+            <li>
+              {i < 3 && (
+                <Picture
+                  src={app.shot}
+                  alt={app.alt}
+                  formats={['avif', 'webp']}
+                  widths={[390, 560, 780, 1120]}
+                  sizes="(min-width: 640px) 560px, calc(100vw - 2.5rem)"
+                  loading="lazy"
+                  class="shot mb-3 aspect-[16/10] w-full object-cover object-top xl:hidden"
+                />
+              )}
+              <a
+                href={app.href}
+                data-i={i}
+                class="row grid min-h-[3.25rem] grid-cols-[1fr_auto] items-center gap-x-4 xl:min-h-11 xl:grid-cols-[42%_1fr_auto]"
+              >
+                <span class="nm text-body text-ink">{app.name}</span>
+                <span class="col-start-1 row-start-2 -mt-2 pb-1 text-small text-soft xl:col-start-2 xl:row-start-1 xl:mt-0 xl:pb-0">
+                  {app.kind}
+                </span>
+                <span class="col-start-2 row-start-1 text-right text-small text-soft xl:col-start-3">
+                  {app.platforms}
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+
+        <p class="reveal mt-12 text-body text-soft" style="--d: 100ms">
+          <a class="link text-ink" href={REPOS.nativedesktopDocs}>Read the NativeDesktop docs</a>
         </p>
       </div>
 
-      <ul class="list relative mt-8 flex flex-col gap-10 xl:gap-0 reveal" style="--d: 100ms" data-active="0">
+      <div class="reveal pointer-events-none hidden xl:grid" style="--d: 100ms" aria-hidden="true">
         {apps.map((app, i) => (
-          <li>
-            {i < 3 && (
-              <Picture
-                src={app.shot}
-                alt={app.alt}
-                formats={['avif', 'webp']}
-                widths={[390, 560, 780, 1120]}
-                sizes="(min-width: 640px) 560px, calc(100vw - 2.5rem)"
-                loading="lazy"
-                class="shot mb-3 aspect-[16/10] w-full object-cover object-top xl:hidden"
-              />
-            )}
-            <a
-              href={app.href}
-              data-i={i}
-              class="row grid min-h-[3.25rem] grid-cols-[1fr_auto] items-center gap-x-4 xl:min-h-11 xl:grid-cols-[42%_1fr_auto]"
-            >
-              <span class="nm text-body text-ink">{app.name}</span>
-              <span class="col-start-1 row-start-2 -mt-2 pb-1 text-small text-soft xl:col-start-2 xl:row-start-1 xl:mt-0 xl:pb-0">
-                {app.kind}
-              </span>
-              <span class="col-start-2 row-start-1 text-right text-small text-soft xl:col-start-3">
-                {app.platforms}
-              </span>
-            </a>
-            <div
-              class="frame pointer-events-none absolute left-[calc(100%+4rem)] hidden w-[26.25rem] xl:block"
-              style={`top: ${i * 2.75}rem`}
-              data-frame={i}
-              aria-hidden="true"
-            >
-              <Picture
-                src={app.shot}
-                alt=""
-                formats={['avif', 'webp']}
-                widths={[420, 840]}
-                sizes="420px"
-                loading="lazy"
-                class="shot block h-auto w-full"
-              />
-            </div>
-          </li>
+          <div class="frame [grid-area:1/1]" data-frame={i}>
+            <Picture
+              src={app.shot}
+              alt=""
+              formats={['avif', 'webp']}
+              widths={[640, 960, 1280]}
+              sizes="calc(50vw - 4.5rem)"
+              loading="lazy"
+              class="shot block h-auto w-full"
+            />
+          </div>
         ))}
-      </ul>
-
-      <div class="reveal mt-12 max-w-[35rem] text-body text-soft" style="--d: 100ms">
-        <p>
-          <a class="link text-ink" href={REPOS.nativedesktopDocs}>Read the NativeDesktop docs</a>
-        </p>
       </div>
     </div>
   </div>
 </section>
 
 <style>
-  .ledger {
-    --ledger-left: min(calc(22vw - 2.5rem), calc(100% - 65.25rem));
-  }
-
   .nm {
     transition: color 150ms var(--ease-out);
   }
@@ -124,10 +120,10 @@ const apps = [
     transition: opacity 150ms var(--ease-out);
   }
 
-  .list[data-active="0"] .frame[data-frame="0"],
-  .list[data-active="1"] .frame[data-frame="1"],
-  .list[data-active="2"] .frame[data-frame="2"],
-  .list[data-active="3"] .frame[data-frame="3"] {
+  .ledger[data-active="0"] .frame[data-frame="0"],
+  .ledger[data-active="1"] .frame[data-frame="1"],
+  .ledger[data-active="2"] .frame[data-frame="2"],
+  .ledger[data-active="3"] .frame[data-frame="3"] {
     opacity: 1;
   }
 
@@ -147,10 +143,11 @@ const apps = [
 </style>
 
 <script>
-  const list = document.querySelector<HTMLElement>('#apps .list');
+  const ledger = document.querySelector<HTMLElement>('#apps .ledger');
+  const list = ledger?.querySelector<HTMLElement>('.list');
   const show = (e: Event) => {
     const row = (e.target as Element).closest<HTMLElement>('a[data-i]');
-    if (row && list) list.dataset.active = row.dataset.i;
+    if (row && ledger) ledger.dataset.active = row.dataset.i;
   };
   list?.addEventListener('pointerover', show);
   list?.addEventListener('focusin', show);
