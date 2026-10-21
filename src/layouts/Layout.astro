@@ -1,0 +1,115 @@
+---
+import '../styles/global.css';
+import { SITE } from '../site';
+
+interface Props {
+  title?: string;
+  description?: string;
+  noindex?: boolean;
+}
+
+const { title = `${SITE.name}: one system on the Linux distro you choose`, description = SITE.description, noindex = false } = Astro.props;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE.name,
+  url: Astro.site?.href,
+  description,
+};
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = new URL('/og.png', Astro.site);
+
+const nav = [
+  { href: '#formalspec', label: 'FormalSpec' },
+  { href: '#installer', label: 'Installer' },
+  { href: '#apps', label: 'Apps' },
+  { href: '#formalshell', label: 'FormalShell' },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="theme-color" content="#161616" />
+    <meta name="color-scheme" content="dark" />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="icon" href="/icon-512.png" type="image/png" sizes="512x512" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preload" href="/fonts/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/geist-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="generator" content={Astro.generator} />
+    {!noindex && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+
+    <script is:inline>document.documentElement.classList.add('js');</script>
+  </head>
+  <body class="min-h-svh overflow-x-clip">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-ink focus:px-4 focus:py-2 focus:text-ground"
+    >Skip to content</a>
+
+    <header class="mx-auto flex max-w-[90rem] items-center justify-between gap-6 px-5 pt-[max(1.25rem,env(safe-area-inset-top))] sm:px-10 sm:pt-7">
+      <a href="/" class="py-2 font-medium tracking-[-0.01em] text-ink">{SITE.name}</a>
+      <nav aria-label="Sections" class="hidden md:block">
+        <ul class="flex gap-7 text-[0.9375rem] text-soft">
+          {nav.map((item) => (
+            <li><a href={item.href} class="py-2 transition-colors duration-150 hover:text-ink">{item.label}</a></li>
+          ))}
+        </ul>
+      </nav>
+      <a href={SITE.github} class="py-2 text-[0.9375rem] text-ink link">GitHub</a>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="mx-auto mt-[30svh] max-w-[90rem] px-5 pb-[max(1.875rem,env(safe-area-inset-bottom))] text-[0.9375rem] sm:px-10">
+      <div class="grid gap-2 sm:grid-cols-[1fr_auto_1fr] sm:items-baseline sm:gap-6">
+        <p class="text-soft">{SITE.name}, open source by {SITE.author}</p>
+        <ul class="flex flex-wrap gap-x-6 gap-y-1">
+          <li><a class="link py-2" href={SITE.github}>GitHub</a></li>
+          <li><a class="link py-2" href="https://native.formalsnake.dev">NativeDesktop docs</a></li>
+        </ul>
+        <p class="text-soft sm:text-right"><span class="tabular-nums">2026</span>, {SITE.handle}</p>
+      </div>
+    </footer>
+
+    <script>
+      const els = document.querySelectorAll('.reveal');
+      if (els.length) {
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const e of entries) {
+              if (e.isIntersecting) {
+                e.target.classList.add('in');
+                io.unobserve(e.target);
+              }
+            }
+          },
+          { rootMargin: '0px 0px -10% 0px' },
+        );
+        for (const el of els) io.observe(el);
+      }
+    </script>
+  </body>
+</html>

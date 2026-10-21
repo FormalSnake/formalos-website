@@ -1,0 +1,220 @@
+---
+import { Picture, getImage } from 'astro:assets';
+import { Pause, Play } from '@lucide/astro';
+import { REPOS } from '../site';
+import launcherPoster from '../assets/shots/shell-launcher-poster.png';
+import screensaverPoster from '../assets/shots/shell-screensaver-poster.png';
+import metamorphosis from '../assets/shots/shell-theme-metamorphosis.png';
+import pantheon from '../assets/shots/shell-theme-pantheon.png';
+import retro from '../assets/shots/shell-theme-retro.png';
+import lock from '../assets/shots/shell-lock.png';
+import center from '../assets/shots/shell-center.png';
+import visualizers from '../assets/shots/shell-visualizers.png';
+
+const poster = async (src: ImageMetadata) => (await getImage({ src, width: 960, format: 'webp' })).src;
+
+const strips = [
+  'bg-raised text-ink',
+  'bg-accent text-on-accent',
+  'bg-ink text-ground',
+  'bg-raised-2 text-ink',
+];
+
+type Tile = {
+  media: { video: string; poster: string } | { image: ImageMetadata; alt: string };
+  position: string;
+  top: [string, string];
+  bottom: [string, string];
+};
+
+const tiles: Tile[] = [
+  {
+    media: { video: '/media/shell-launcher.mp4', poster: await poster(launcherPoster) },
+    position: 'object-center',
+    top: ['metamorphosis', 'default'],
+    bottom: ['Launcher', 'docs/media'],
+  },
+  {
+    media: {
+      image: metamorphosis,
+      alt: 'The metamorphosis theme: a dark bar with a rounded Media panel under it showing a track, a progress bar and playback controls.',
+    },
+    position: 'object-right',
+    top: ['metamorphosis', 'default'],
+    bottom: ['Media panel', 'docs/screenshots'],
+  },
+  {
+    media: {
+      image: pantheon,
+      alt: 'The pantheon theme: raised controls on the bar and the same Media panel with sunken fields and a soft edge.',
+    },
+    position: 'object-right',
+    top: ['pantheon', 'elementary'],
+    bottom: ['Media panel', 'docs/screenshots'],
+  },
+  {
+    media: {
+      image: retro,
+      alt: 'The retro theme: square corners, monospace type and a dithered wallpaper behind the Media panel.',
+    },
+    position: 'object-right',
+    top: ['retro', 'dithered'],
+    bottom: ['Media panel', 'docs/screenshots'],
+  },
+  {
+    media: { video: '/media/shell-screensaver.mp4', poster: await poster(screensaverPoster) },
+    position: 'object-center',
+    top: ['ttfx', 'decrypt'],
+    bottom: ['Screensaver', 'docs/media'],
+  },
+  {
+    media: {
+      image: lock,
+      alt: 'The lock screen: a large clock, the date and a password field over the wallpaper.',
+    },
+    position: 'object-center',
+    top: ['PAM', 'lock screen'],
+    bottom: ['Lock screen', 'docs/screenshots'],
+  },
+  {
+    media: {
+      image: center,
+      alt: 'The notification centre open under the bar, with a Do not disturb switch, Clear all and one pending notification.',
+    },
+    position: 'object-right',
+    top: ['DND', 'history'],
+    bottom: ['Notification centre', 'docs/screenshots'],
+  },
+  {
+    media: {
+      image: visualizers,
+      alt: 'A grid of the 31 visualizer styles, each a small animated graphic with its name beneath: bars, peaks, led, mirror, wave, scope and more.',
+    },
+    position: 'object-top',
+    top: ['31 styles', 'media panel'],
+    bottom: ['Visualizers', 'docs/media'],
+  },
+];
+---
+
+<section id="formalshell" aria-labelledby="formalshell-title" class="mx-auto max-w-[90rem] px-5 pt-32 sm:px-10 lg:pt-48">
+  <div class="reveal">
+    <h2 id="formalshell-title" class="text-[length:var(--text-title)] leading-[1.05] tracking-[-0.02em]">
+      FormalShell, coming next
+    </h2>
+    <p class="mt-4 max-w-[44ch] text-lead leading-snug text-soft">
+      A desktop shell for Hyprland, written in Rust. One process draws the bar, launcher, panels, notifications, lock screen, greeter and screensaver, and every colour comes from your wallpaper through matugen.
+    </p>
+    <p class="mt-5 max-w-[60ch] text-small text-soft">
+      <span class="font-medium text-alert">Pre-alpha.</span>{' '}
+      It is not part of the installer presets yet, and no machine runs it as an everyday session yet. It needs Hyprland 0.56 or newer.
+    </p>
+    <p class="mt-4">
+      <a class="link" href={REPOS.formalshell}>Follow FormalShell on GitHub</a>
+    </p>
+  </div>
+
+  <ul class="mt-14 grid grid-cols-2 gap-x-2 gap-y-6 lg:mt-20 lg:grid-cols-4 lg:gap-x-3 lg:gap-y-7">
+    {
+      tiles.map((t, i) => (
+        <li class="reveal flex flex-col" style={`--d: ${(i % 4) * 70}ms`}>
+          <div class="relative aspect-[4/3] overflow-hidden bg-raised">
+            {'video' in t.media ? (
+              <>
+                <video
+                  class={`shot h-full w-full object-cover ${t.position}`}
+                  src={t.media.video}
+                  poster={t.media.poster}
+                  muted
+                  loop
+                  playsinline
+                  preload="none"
+                  aria-hidden="true"
+                  data-shell-video
+                />
+                <button
+                  type="button"
+                  data-shell-toggle
+                  aria-label="Play video"
+                  class="absolute bottom-0 right-0 inline-flex size-11 items-center justify-center bg-ground text-ink transition-transform duration-150 ease-[var(--ease-out)] active:scale-[0.96]"
+                >
+                  <Pause class="hidden size-4" data-icon="pause" aria-hidden="true" />
+                  <Play class="size-4" data-icon="play" aria-hidden="true" />
+                </button>
+              </>
+            ) : (
+              <Picture
+                src={t.media.image}
+                alt={t.media.alt}
+                formats={['avif', 'webp']}
+                widths={[400, 640, 960]}
+                sizes="(min-width: 1024px) 25vw, 50vw"
+                loading="lazy"
+                class={`shot h-full w-full object-cover ${t.position}`}
+                pictureAttributes={{ class: 'block h-full w-full' }}
+              />
+            )}
+          </div>
+          <div
+            data-strip
+            class={`flex flex-1 flex-col justify-between gap-1 p-3 text-small tabular-nums min-h-[88px] ${strips[i % 4]}`}
+          >
+            <p class="flex flex-wrap justify-between gap-x-2">
+              <span class="font-medium">{t.top[0]}</span>
+              <span>{t.top[1]}</span>
+            </p>
+            <p class="flex flex-wrap justify-between gap-x-2 opacity-80">
+              <span>{t.bottom[0]}</span>
+              <span class="hidden lg:inline">{t.bottom[1]}</span>
+            </p>
+          </div>
+        </li>
+      ))
+    }
+  </ul>
+
+  <script>
+    const motionOk = matchMedia('(prefers-reduced-motion: no-preference)');
+    document.querySelectorAll<HTMLVideoElement>('[data-shell-video]').forEach((video) => {
+      const button = video.parentElement!.querySelector<HTMLButtonElement>('[data-shell-toggle]')!;
+      const pauseIcon = button.querySelector('[data-icon="pause"]')!;
+      const playIcon = button.querySelector('[data-icon="play"]')!;
+      let visible = false;
+      let userPaused = false;
+
+      const sync = () => {
+        const playing = !video.paused;
+        pauseIcon.classList.toggle('hidden', !playing);
+        playIcon.classList.toggle('hidden', playing);
+        button.setAttribute('aria-label', playing ? 'Pause video' : 'Play video');
+      };
+      const start = () => video.play().catch(() => {}).finally(sync);
+
+      new IntersectionObserver(
+        ([entry]) => {
+          visible = entry.isIntersecting;
+          if (visible && motionOk.matches && !userPaused) start();
+          else if (!visible) {
+            video.pause();
+            sync();
+          }
+        },
+        { threshold: 0.4 },
+      ).observe(video);
+
+      button.addEventListener('click', () => {
+        if (video.paused) {
+          userPaused = false;
+          start();
+        } else {
+          userPaused = true;
+          video.pause();
+          sync();
+        }
+      });
+      video.addEventListener('play', sync);
+      video.addEventListener('pause', sync);
+      sync();
+    });
+  </script>
+</section>

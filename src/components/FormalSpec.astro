@@ -1,0 +1,243 @@
+---
+import { highlight } from '../lib/highlight';
+import { REPOS } from '../site';
+
+const commands = [
+  { key: 'fspec update', syntax: 'fspec update [pkg] [--cache]', does: 'Resolves upstream and rewrites the lock. With --cache, it records CI-built OCI digests.' },
+  { key: 'fspec update --images', syntax: 'fspec update --images', does: "Pins each image host's pushed digest." },
+  { key: 'fspec image containerfile', syntax: 'fspec image containerfile --host h', does: 'Prints the Containerfile for a bootc host.' },
+  { key: 'fspec build', syntax: 'fspec build --pkg p --platform t --out d', does: 'Builds a git(...) package into a .tar.zst.' },
+  { key: 'fspec ci init', syntax: 'fspec ci init [--registry r]', does: 'Writes the image build workflow.' },
+  { key: 'fspec ci packages', syntax: 'fspec ci packages', does: 'Writes the workflow that builds and pushes patched packages.' },
+  { key: 'fspec plan', syntax: 'fspec plan [--all] [--dirty]', does: 'Diffs config against state, per host. With --all, it asks each remote host over ssh.' },
+  { key: 'fspec apply', syntax: 'fspec apply [--host h] [--all] [--dirty]', does: 'Converges the host, over ssh for remote hosts.' },
+  { key: 'fspec rollback', syntax: 'fspec rollback [gen]', does: 'Goes back to the previous generation, data included.' },
+  { key: 'fspec shell-hook', syntax: 'fspec shell-hook <fish|zsh|bash>', does: 'Prints shell code that applies .fspec.toml pins.' },
+  { key: 'fspec gc', syntax: 'fspec gc --older-than 14d', does: 'Drops old generations, store paths and trash.' },
+  { key: 'fspec adopt', syntax: 'fspec adopt <path>', does: "Pulls an app's edit of a managed file into the repo." },
+  { key: 'fspec orphans', syntax: 'fspec orphans', does: 'Shows unattributed app data.' },
+  { key: 'fspec watch', syntax: 'fspec watch', does: 'Reports drift live.' },
+  { key: 'fspec switch --distro', syntax: 'fspec switch --distro d [--release r]', does: 'Installs another distro beside this one.' },
+  { key: 'fspec switch --adopt-boot', syntax: 'fspec switch --adopt-boot', does: 'Makes the running root own boot, so the old one can be forgotten.' },
+  { key: 'fspec switch --reset-var', syntax: 'fspec switch --reset-var', does: 'Stages a reset of /etc and /var for the next boot of a bootc host.' },
+  { key: 'fspec switch --to-image', syntax: 'fspec switch --to-image --yes', does: "Converts a classic machine to the host's bootc image." },
+  { key: 'fspec forget', syntax: 'fspec forget <distro>', does: 'Deletes an old distro root, from the root that owns boot.' },
+  { key: 'fspec disk plan', syntax: 'fspec disk plan [device]', does: 'Lists the steps that bring a disk onto a supported layout.' },
+  { key: 'fspec disk migrate', syntax: 'fspec disk migrate [device]', does: 'Runs the in-place steps of fspec disk plan.' },
+  { key: 'fspec disk init', syntax: 'fspec disk init <device>', does: 'Partitions and formats a disk with a supported layout.' },
+];
+
+const start = 'fspec switch --distro arch';
+const first = commands.find((c) => c.key === 'fspec switch --distro')!;
+const examples = ['fspec plan --all', 'fspec rollback', 'fspec update'];
+
+const filesSnippet = `load("//modules/cli.star", "cli")
+
+def laptop(name, extra = []):
+    return host(
+        name = name,
+        platform = "x86_64-linux",
+        system = image(base = "ghcr.io/ublue-os/bazzite-nvidia:stable"),
+        users = [user("kyandesutter", uid = 1000, shell = "fish")],
+        modules = [cli()] + extra,
+    )
+
+hosts = [laptop("g815"), laptop("e1504g")]`;
+
+const systemSnippet = `# change the base image, then apply
+system = image(base = "ghcr.io/ublue-os/bazzite-nvidia:stable")`;
+
+const cleanupSnippet = `fspec rollback
+fspec gc --older-than 14d`;
+
+const initSystems = ['systemd', 'runit', 'OpenRC', 'dinit', 's6', 'launchd'];
+---
+
+<section id="formalspec" aria-labelledby="formalspec-title" class="mx-auto max-w-[90rem] px-5 pt-32 sm:px-10 lg:pt-48">
+  <div class="reveal">
+    <h2 id="formalspec-title" class="text-[length:var(--text-title)] leading-[1.05] tracking-[-0.02em]">FormalSpec</h2>
+    <p class="mt-4 max-w-[40ch] text-lead leading-snug text-soft">
+      Declare your machines in code and keep them identical, on any Linux distro and on macOS.
+    </p>
+    <p class="mt-5 max-w-[60ch] text-small leading-relaxed text-soft">
+      <span class="font-medium text-ink">Early.</span>{" "}
+      Apply, drift repair, removal, rollback and gc have run for real on macOS and on Fedora 44, Arch, Debian 13 and Void
+      in containers. bootc images and <span class="font-mono">fspec switch</span> have only run against temp roots so far.
+    </p>
+  </div>
+
+  <div id="fspec-field" data-ui class="reveal mt-14 flex flex-col lg:mt-20">
+    <input
+      id="fspec-input"
+      class="fspec-input"
+      type="text"
+      value={start}
+      aria-label="Type an fspec command"
+      aria-controls="fspec-answer"
+      autocomplete="off"
+      autocapitalize="none"
+      spellcheck="false"
+    />
+
+    <div
+      id="fspec-answer"
+      aria-live="polite"
+      class="mt-12 w-full max-w-[35rem] rounded-[8px] bg-raised p-5 text-[0.875rem] leading-snug"
+    >
+      <p id="fspec-syntax" class="font-mono text-ink">{first.syntax}</p>
+      <p id="fspec-does" class="mt-2 text-soft">{first.does}</p>
+    </div>
+
+    <div id="fspec-examples" class="mt-10 flex flex-wrap gap-2 lg:mt-auto lg:gap-x-8 lg:pt-12">
+      {
+        examples.map((e) => (
+          <button
+            type="button"
+            data-fill={e}
+            class="min-h-11 bg-raised px-4 font-mono text-body text-ink transition-transform duration-150 ease-out active:scale-[0.96] lg:bg-transparent lg:px-0 lg:text-soft lg:underline lg:decoration-white/40 lg:underline-offset-[0.25em] lg:hover:text-ink lg:hover:decoration-current"
+          >
+            {e}
+          </button>
+        ))
+      }
+    </div>
+    <script id="fspec-commands" type="application/json" set:html={JSON.stringify(commands)} />
+  </div>
+
+  <div class="mt-24 lg:mt-32">
+    <h3 class="sr-only">What it manages</h3>
+
+    <div class="reveal grid gap-6 lg:grid-cols-12 lg:gap-x-10">
+      <div class="lg:col-span-5">
+        <h3 class="text-lead tracking-[-0.01em]">Files</h3>
+        <p class="mt-2 max-w-[34ch] text-soft">
+          Written, linked, seeded once, or merged key by key into a file the app also writes.
+        </p>
+      </div>
+      <pre data-ui class="code m-0 min-w-0 overflow-x-auto rounded-[8px] bg-raised p-5 lg:col-span-7"><code set:html={highlight(filesSnippet)} /></pre>
+    </div>
+
+    <div class="reveal mt-16 grid gap-5 lg:mt-24 lg:grid-cols-12 lg:gap-x-10">
+      <div class="lg:col-span-5">
+        <h3 class="text-lead tracking-[-0.01em]">Services</h3>
+        <p class="mt-2 max-w-[34ch] text-soft">One description, rendered for each init system.</p>
+      </div>
+      <ul class="flex flex-wrap gap-x-7 gap-y-1 text-lead text-ink lg:col-span-7 lg:self-center">
+        {initSystems.map((s) => <li>{s}</li>)}
+      </ul>
+    </div>
+
+    <div class="reveal mt-16 grid gap-6 lg:mt-24 lg:grid-cols-12 lg:gap-x-10">
+      <div class="lg:col-span-5">
+        <h3 class="text-lead tracking-[-0.01em]">System</h3>
+        <p class="mt-2 max-w-[34ch] text-soft">
+          A bootc image on Fedora Atomic, Bazzite and friends, or the distro's package manager elsewhere.
+        </p>
+      </div>
+      <pre data-ui class="code m-0 min-w-0 overflow-x-auto rounded-[8px] bg-raised p-5 lg:col-span-7 lg:self-start"><code set:html={highlight(systemSnippet)} /></pre>
+    </div>
+
+    <div class="reveal mt-16 grid gap-6 lg:mt-24 lg:grid-cols-12 lg:gap-x-10">
+      <div class="lg:col-span-5">
+        <h3 class="text-lead tracking-[-0.01em]">Cleanup</h3>
+        <p class="mt-2 max-w-[34ch] text-soft">
+          Removing a line removes the package, its services, its files and its app data, and rollback brings them back.
+        </p>
+      </div>
+      <pre data-ui class="code m-0 w-fit min-w-0 max-w-full overflow-x-auto rounded-[8px] bg-raised p-5 lg:col-span-7 lg:self-start"><code set:html={highlight(cleanupSnippet)} /></pre>
+    </div>
+  </div>
+
+  <p class="reveal mt-16 lg:mt-24">
+    <a class="link inline-block py-2" href={REPOS.formalspec}>Read the FormalSpec README</a>
+  </p>
+</section>
+
+<style>
+  .fspec-input {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--ink);
+    caret-color: var(--accent);
+    caret-shape: block;
+    font-family: var(--font-mono);
+    font-size: 9vw;
+    line-height: 1.15;
+    letter-spacing: -0.04em;
+    white-space: pre;
+    overflow-x: auto;
+    scrollbar-width: none;
+    outline: none;
+  }
+
+  .fspec-input::-webkit-scrollbar {
+    display: none;
+  }
+
+  .fspec-input:focus-visible {
+    outline: 2px solid var(--accent-text);
+    outline-offset: 6px;
+  }
+
+  @media (min-width: 40rem) {
+    .fspec-input {
+      font-size: clamp(1.75rem, 5.5vw, 5.5rem);
+    }
+  }
+</style>
+
+<script>
+  type Cmd = { key: string; syntax: string; does: string };
+
+  const input = document.getElementById('fspec-input') as HTMLInputElement | null;
+  const syntax = document.getElementById('fspec-syntax');
+  const does = document.getElementById('fspec-does');
+  const data = document.getElementById('fspec-commands');
+
+  if (input && syntax && does && data) {
+    const commands: (Cmd & { words: string[] })[] = (JSON.parse(data.textContent ?? '[]') as Cmd[]).map((c) => ({
+      ...c,
+      words: c.key.split(' '),
+    }));
+
+    const find = (value: string) => {
+      const tokens = value.trim().split(/\s+/).filter(Boolean);
+      if (!tokens.length) return undefined;
+      let best: (typeof commands)[number] | undefined;
+      for (const c of commands) {
+        if (c.words.every((w, i) => tokens[i] === w) && (!best || c.words.length > best.words.length)) best = c;
+      }
+      if (best) return best;
+      return commands.find(
+        (c) => tokens.length <= c.words.length && tokens.every((t, i) => (i === tokens.length - 1 ? c.words[i].startsWith(t) : c.words[i] === t)),
+      );
+    };
+
+    const render = () => {
+      const c = find(input.value);
+      if (c) {
+        syntax.hidden = false;
+        syntax.textContent = c.syntax;
+        does.textContent = c.does;
+      } else {
+        syntax.hidden = true;
+        does.textContent = 'Not an fspec command. Try plan, apply or rollback.';
+      }
+    };
+
+    input.addEventListener('input', render);
+    document.getElementById('fspec-examples')?.addEventListener('click', (e) => {
+      const fill = (e.target as HTMLElement).closest<HTMLElement>('[data-fill]')?.dataset.fill;
+      if (!fill) return;
+      input.value = fill;
+      render();
+      input.focus({ preventScroll: true });
+      input.setSelectionRange(fill.length, fill.length);
+    });
+  }
+</script>

@@ -1,0 +1,163 @@
+---
+import { Picture } from 'astro:assets';
+import { REPOS, SITE } from '../site';
+import ndMac from '../assets/shots/nd-gallery-macos.png';
+import lynkMac from '../assets/shots/lynk-mac.png';
+import messagesThread from '../assets/shots/messages-thread.png';
+import musicLyrics from '../assets/shots/music-lyrics.png';
+
+const apps = [
+  {
+    name: 'NativeDesktop',
+    kind: 'Rust toolkit',
+    platforms: 'macOS, Linux, Windows, web',
+    href: REPOS.nativedesktop,
+    shot: ndMac,
+    alt: 'The NativeDesktop gallery example on macOS, with a native sidebar, toolbar and banner.',
+  },
+  {
+    name: 'Lynk Browser',
+    kind: 'Browser',
+    platforms: 'macOS, Linux',
+    href: REPOS.lynk,
+    shot: lynkMac,
+    alt: 'Lynk Browser on macOS: pinned tiles and tabs in a sidebar beside a Wikipedia article.',
+  },
+  {
+    name: 'Messages',
+    kind: 'iMessage client',
+    platforms: 'Linux, Windows',
+    href: REPOS.messages,
+    shot: messagesThread,
+    alt: 'Messages showing a group thread named Design crit, with demo data.',
+  },
+  {
+    name: 'FormalMusic',
+    kind: 'YouTube Music client',
+    platforms: 'Linux, Windows',
+    href: REPOS.formalmusic,
+    shot: musicLyrics,
+    alt: 'FormalMusic playing a song, with word-synced lyrics beside the album cover.',
+  },
+];
+---
+
+<section id="apps" aria-labelledby="apps-title" class="pt-32 lg:pt-48">
+  <div class="mx-auto max-w-[90rem] px-5 sm:px-10">
+    <div class="ledger xl:ml-[var(--ledger-left)] max-w-[35rem]">
+      <div class="reveal">
+        <h2 id="apps-title" class="text-[length:var(--text-title)] leading-[1.08] tracking-[-0.02em]">
+          Apps that feel native
+        </h2>
+        <p class="mt-5 max-w-[44ch] text-lead leading-snug text-soft">
+          You describe a window once and each OS draws it with its own widgets: AppKit on macOS, GPUI elsewhere.
+        </p>
+        <p class="mt-4 text-small text-soft">NativeDesktop releases are git tags, not crates.io versions.</p>
+      </div>
+
+      <ul class="list relative mt-8 flex flex-col gap-10 xl:gap-0 reveal" style="--d: 100ms" data-active="0">
+        {apps.map((app, i) => (
+          <li>
+            {i < 3 && (
+              <Picture
+                src={app.shot}
+                alt={app.alt}
+                formats={['avif', 'webp']}
+                widths={[390, 560, 780, 1120]}
+                sizes="(min-width: 640px) 560px, calc(100vw - 2.5rem)"
+                loading="lazy"
+                class="shot mb-3 aspect-[16/10] w-full object-cover object-top xl:hidden"
+              />
+            )}
+            <a
+              href={app.href}
+              data-i={i}
+              class="row grid min-h-[3.25rem] grid-cols-[1fr_auto] items-center gap-x-4 xl:min-h-11 xl:grid-cols-[42%_1fr_auto]"
+            >
+              <span class="nm text-body text-ink">{app.name}</span>
+              <span class="col-start-1 row-start-2 -mt-2 pb-1 text-small text-soft xl:col-start-2 xl:row-start-1 xl:mt-0 xl:pb-0">
+                {app.kind}
+              </span>
+              <span class="col-start-2 row-start-1 text-right text-small text-soft xl:col-start-3">
+                {app.platforms}
+              </span>
+            </a>
+            <div
+              class="frame pointer-events-none absolute left-[calc(100%+4rem)] hidden w-[26.25rem] xl:block"
+              style={`top: ${i * 2.75}rem`}
+              data-frame={i}
+              aria-hidden="true"
+            >
+              <Picture
+                src={app.shot}
+                alt=""
+                formats={['avif', 'webp']}
+                widths={[420, 840]}
+                sizes="420px"
+                loading="lazy"
+                class="shot block h-auto w-full"
+              />
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <div class="reveal mt-12 max-w-[35rem] text-body text-soft" style="--d: 100ms">
+        <p>Messages talks to a BlueBubbles server that runs on your Mac.</p>
+        <p class="mt-3">
+          The NativeDesktop ports of Messages and FormalMusic add macOS. They are in progress and not merged.
+        </p>
+        <p class="mt-3">Lynk has no release to download yet. FormalMusic does not play video yet.</p>
+        <p class="mt-6">
+          <a class="link text-ink" href={REPOS.nativedesktopDocs}>Read the NativeDesktop docs</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .ledger {
+    --ledger-left: min(calc(22vw - 2.5rem), calc(100% - 65.25rem));
+  }
+
+  .nm {
+    transition: color 150ms var(--ease-out);
+  }
+
+  .frame {
+    opacity: 0;
+    transition: opacity 150ms var(--ease-out);
+  }
+
+  .list[data-active="0"] .frame[data-frame="0"],
+  .list[data-active="1"] .frame[data-frame="1"],
+  .list[data-active="2"] .frame[data-frame="2"],
+  .list[data-active="3"] .frame[data-frame="3"] {
+    opacity: 1;
+  }
+
+  @media (min-width: 80rem) and (hover: hover) and (pointer: fine) {
+    .list:has(.row:hover) .row:not(:hover) .nm,
+    .list:has(.row:focus-visible) .row:not(:focus-visible) .nm {
+      color: var(--soft);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .frame,
+    .nm {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  const list = document.querySelector<HTMLElement>('#apps .list');
+  const show = (e: Event) => {
+    const row = (e.target as Element).closest<HTMLElement>('a[data-i]');
+    if (row && list) list.dataset.active = row.dataset.i;
+  };
+  list?.addEventListener('pointerover', show);
+  list?.addEventListener('focusin', show);
+</script>

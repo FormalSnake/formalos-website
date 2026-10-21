@@ -1,0 +1,24 @@
+{
+  "name": "formalsnake-os",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=22.22.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "deploy": "astro build && wrangler deploy",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@lucide/astro": "^1.61.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "astro": "^7.4.1",
+    "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "wrangler": "^4.151.3"
+  }
+}

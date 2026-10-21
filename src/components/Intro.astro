@@ -1,0 +1,23 @@
+---
+import { SITE } from '../site';
+---
+
+<section aria-label={`About ${SITE.name}`} class="mx-auto max-w-[90rem] px-5 pt-32 sm:px-10 lg:pt-44">
+  <div class="w-[78%] max-w-[21rem] text-body leading-relaxed lg:ml-[33.333%] lg:w-auto lg:pl-14 lg:[&>*]:max-w-[21rem]">
+    <p class="reveal font-medium text-ink">
+      {SITE.name} is not a new distro. It is a few programs that sit on top of one you already trust.
+    </p>
+    <p class="reveal mt-5 text-soft" style="--d: 70ms">
+      FormalSpec describes each machine in Starlark: packages, files, services and the distro underneath. One lockfile
+      pins every version, so every machine that applies the same commit ends up with the same software.
+    </p>
+    <p class="reveal mt-5 text-soft" style="--d: 140ms">
+      The installer puts that description on a new disk. NativeDesktop apps and FormalShell are what you see once it
+      boots.
+    </p>
+    <p class="reveal mt-5 text-soft" style="--d: 210ms">
+      All of it is early. Each section below says what has run on real hardware and what has not.
+      <a class="link mt-3 block w-fit py-2 text-ink" href={SITE.github}>Browse the code on GitHub</a>
+    </p>
+  </div>
+</section>

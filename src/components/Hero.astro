@@ -1,0 +1,290 @@
+---
+import { DISTROS, PRESET_LABELS, DESKTOP_LABELS, preview, type Preset } from '../data/installer';
+import { highlight } from '../lib/highlight';
+import { REPOS } from '../site';
+
+const start = { distro: 'fedora', preset: 'desktop' as Preset, desktop: 'gnome' as const, hostname: 'g815', user: 'kyan' };
+const first = DISTROS[0];
+const facts = (d: (typeof DISTROS)[number]) =>
+  [
+    d.release === 'rolling' ? 'Rolling release' : 'Fixed releases',
+    d.delivery === 'image' ? 'bootc image' : 'Classic packages',
+    d.signedKernel ? 'Signed kernel' : 'Unsigned kernel',
+  ].join(', ');
+---
+
+<section aria-labelledby="hero-title" class="mx-auto max-w-[90rem] px-5 sm:px-10">
+  <div class="pt-14 sm:pt-24 lg:pt-28 lg:max-w-[46rem]">
+    <h1 id="hero-title" class="rise text-[length:var(--text-display)] leading-[1.02] tracking-[-0.035em]">
+      One system, any distro under it
+    </h1>
+    <p class="rise mt-6 max-w-[40ch] text-lead leading-snug text-soft" style="--d: 80ms">
+      Describe your machines once, in code. FormalSpec installs them on the distro you pick and keeps them identical.
+    </p>
+    <div class="rise mt-8" style="--d: 160ms">
+      <a class="btn" href={REPOS.formalspec}>Read FormalSpec on GitHub</a>
+    </div>
+  </div>
+
+  <div class="stage shutter relative mt-14 -mx-5 bg-accent pt-[calc(var(--tab-h)+1rem)] sm:-mx-10 lg:-mt-24 lg:ml-[33.333%] lg:mr-[calc(50%-50vw)] lg:pt-[calc(var(--tab-h)+3.5rem)] lg:pl-14">
+    <div class="settle px-4 lg:px-0">
+      <form
+        id="picker"
+        data-ui
+        class="w-full max-w-[42rem] rounded-t-[10px] bg-[#1b1b1b] text-ink"
+        aria-describedby="picker-note"
+      >
+        <div class="flex items-center justify-between px-4 py-3 text-soft">
+          <span class="font-medium text-ink">Pick what the installer writes</span>
+          <span>spec.star</span>
+        </div>
+
+        <div class="grid gap-x-4 gap-y-5 px-4 pb-4 sm:grid-cols-[13.5rem_1fr]">
+          <fieldset>
+            <legend class="mb-2 text-soft">Distro</legend>
+            <div class="grid grid-cols-2 gap-px sm:grid-cols-1">
+              {DISTROS.map((d) => (
+                <label class="choice-row">
+                  <input type="radio" name="distro" value={d.id} checked={d.id === start.distro} class="sr-only" />
+                  <span>{d.name}</span>
+                  {d.delivery === 'image' && <span class="text-soft">image</span>}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <div class="flex flex-col gap-5">
+            <p id="reason" class="min-h-[3.9em] text-[0.875rem] leading-snug text-ink">
+              {first.reason}
+              <span id="facts" class="mt-1.5 block text-soft">{facts(first)}</span>
+            </p>
+
+            <fieldset>
+              <legend class="mb-2 text-soft">Preset</legend>
+              <div class="seg">
+                {Object.entries(PRESET_LABELS).map(([id, label]) => (
+                  <label>
+                    <input type="radio" name="preset" value={id} checked={id === start.preset} class="sr-only" />
+                    <span>{label}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            <fieldset id="desktop-set">
+              <legend class="mb-2 text-soft">Desktop</legend>
+              <div class="seg">
+                {Object.entries(DESKTOP_LABELS).map(([id, label]) => (
+                  <label>
+                    <input type="radio" name="desktop" value={id} checked={id === start.desktop} class="sr-only" />
+                    <span>{label}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            <div class="grid grid-cols-2 gap-3">
+              <label class="flex flex-col gap-1.5">
+                <span class="text-soft">Hostname</span>
+                <input name="hostname" value={start.hostname} autocomplete="off" autocapitalize="none" spellcheck="false" class="field" />
+              </label>
+              <label class="flex flex-col gap-1.5">
+                <span class="text-soft">User</span>
+                <input name="user" value={start.user} autocomplete="off" autocapitalize="none" spellcheck="false" class="field" />
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <pre class="code m-0 overflow-x-auto bg-[#121212] px-4 pt-4 pb-10"><code id="spec" set:html={highlight(preview(start))} /></pre>
+      </form>
+    </div>
+  </div>
+  <p id="picker-note" class="mt-4 max-w-[60ch] text-small text-soft lg:ml-[33.333%] lg:pl-14">
+    The distro list and the file above come from the installer's source. The installer itself has no release yet.
+  </p>
+</section>
+
+<style>
+  .stage {
+    --tab-w: 4.5rem;
+    --tab-h: 2.25rem;
+    clip-path: polygon(0 0, var(--tab-w) 0, calc(var(--tab-w) + var(--tab-h)) var(--tab-h), 100% var(--tab-h), 100% 100%, 0 100%);
+  }
+
+  @media (min-width: 64rem) {
+    .stage {
+      --tab-w: 14rem;
+      --tab-h: 3rem;
+    }
+  }
+
+  .choice-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    min-height: 2.125rem;
+    padding: 0.4rem 0.625rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 120ms ease;
+  }
+
+  .choice-row:has(:checked) {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+
+  .choice-row:has(:checked) .text-soft {
+    color: oklch(0.198 0 0 / 0.7);
+  }
+
+  .choice-row:has(:focus-visible),
+  .seg label:has(:focus-visible) {
+    outline: 2px solid var(--accent-text);
+    outline-offset: 1px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .choice-row:not(:has(:checked)):hover {
+      background: var(--raised-2);
+    }
+  }
+
+  .seg {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    padding: 2px;
+    border-radius: 8px;
+    background: #121212;
+    width: fit-content;
+  }
+
+  .seg label {
+    min-height: 2.125rem;
+    display: grid;
+    place-items: center;
+    padding: 0 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 120ms ease, color 120ms ease, transform 120ms var(--ease-out);
+  }
+
+  .seg label:active {
+    transform: scale(0.96);
+  }
+
+  .seg label:has(:checked) {
+    background: var(--raised-2);
+    color: var(--ink);
+  }
+
+  .seg label:not(:has(:checked)) {
+    color: var(--soft);
+  }
+
+  .seg label:has(:disabled) {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  #desktop-set:disabled {
+    opacity: 0.35;
+  }
+
+  .field {
+    min-height: 2.25rem;
+    padding: 0 0.625rem;
+    border-radius: 6px;
+    background: #121212;
+    border: 1px solid oklch(1 0 0 / 0.08);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 16px;
+  }
+
+  @media (min-width: 40rem) {
+    .field {
+      font-size: 0.875rem;
+    }
+  }
+
+  #spec :global(.changed) {
+    border-radius: 3px;
+    animation: changed 1s var(--ease-out);
+  }
+
+  @keyframes changed {
+    from {
+      background-color: oklch(0.673 0.121 242.6 / 0.35);
+    }
+  }
+
+  .field:focus-visible {
+    outline: 2px solid var(--accent-text);
+    outline-offset: 0;
+  }
+</style>
+
+<script>
+  import { DISTROS, needsDesktop, preview, type Desktop, type Preset } from '../data/installer';
+  import { highlight } from '../lib/highlight';
+
+  const form = document.getElementById('picker') as HTMLFormElement | null;
+  const spec = document.getElementById('spec');
+  const reason = document.getElementById('reason');
+  const desktopSet = document.getElementById('desktop-set') as HTMLFieldSetElement | null;
+
+  if (form && spec && reason && desktopSet) {
+    const radios = (name: string) => [...form.querySelectorAll<HTMLInputElement>(`input[name="${name}"]`)];
+    const value = (name: string) => radios(name).find((r) => r.checked)?.value;
+
+    const facts = (d: (typeof DISTROS)[number]) =>
+      [
+        d.release === 'rolling' ? 'Rolling release' : 'Fixed releases',
+        d.delivery === 'image' ? 'bootc image' : 'Classic packages',
+        d.signedKernel ? 'Signed kernel' : 'Unsigned kernel',
+      ].join(', ');
+
+    let shown: string[] | undefined;
+
+    const sync = () => {
+      const distro = DISTROS.find((d) => d.id === value('distro')) ?? DISTROS[0];
+
+      for (const r of radios('preset')) r.disabled = !distro.presets.includes(r.value as Preset);
+      if (!distro.presets.includes(value('preset') as Preset)) {
+        radios('preset').find((r) => r.value === distro.presets[0])!.checked = true;
+      }
+      const preset = value('preset') as Preset;
+
+      for (const r of radios('desktop')) r.disabled = !distro.desktops.includes(r.value as Desktop);
+      if (!distro.desktops.includes(value('desktop') as Desktop)) {
+        radios('desktop').find((r) => r.value === distro.desktops[0])!.checked = true;
+      }
+      desktopSet.disabled = !needsDesktop(preset);
+
+      reason.firstChild!.textContent = distro.reason;
+      reason.querySelector('#facts')!.textContent = facts(distro);
+
+      const hostname = (form.elements.namedItem('hostname') as HTMLInputElement).value.trim();
+      const user = (form.elements.namedItem('user') as HTMLInputElement).value.trim();
+      const lines = preview({
+        distro: distro.id,
+        preset,
+        desktop: needsDesktop(preset) ? (value('desktop') as Desktop) : undefined,
+        hostname,
+        user,
+      }).split('\n');
+      spec.innerHTML = lines
+        .map((line, i) => (shown && shown[i] !== line ? `<span class="changed">${highlight(line)}</span>` : highlight(line)))
+        .join('\n');
+      shown = lines;
+    };
+
+    form.addEventListener('input', sync);
+    form.addEventListener('submit', (e) => e.preventDefault());
+    sync();
+  }
+</script>

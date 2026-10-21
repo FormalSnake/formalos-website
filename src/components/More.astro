@@ -1,0 +1,128 @@
+---
+import { getImage } from 'astro:assets';
+import { Pause, Play } from '@lucide/astro';
+import poster from '../assets/shots/meshtop-demo-poster.png';
+import { REPOS, SITE } from '../site';
+
+const posterImage = await getImage({ src: poster, format: 'webp', width: 1120 });
+
+const groups = [
+  {
+    label: `${SITE.author}'s`,
+    dot: 'bg-accent',
+    items: [
+      {
+        name: 'meshtop',
+        href: REPOS.meshtop,
+        value: 'macOS and Linux, MIT',
+        text: 'Live resource usage, connections and coding agents across all your machines, in one terminal.',
+      },
+      {
+        name: 'nothingctl',
+        href: REPOS.nothingctl,
+        value: 'Linux, 22 models',
+        text: 'Battery, noise control and EQ for Nothing and CMF headphones and earbuds, from the Linux command line.',
+      },
+    ],
+  },
+  {
+    label: 'Contributions',
+    dot: 'bg-soft',
+    items: [
+      {
+        name: 'Kopuz',
+        href: REPOS.kopuz,
+        value: 'Contributor',
+        text: `A Rust and Dioxus music player by the Kopuz-org community. ${SITE.author} contributes to it.`,
+      },
+    ],
+  },
+];
+---
+
+<section id="more" aria-labelledby="more-title" class="mx-auto max-w-[90rem] px-5 pt-32 sm:px-10 lg:pt-48">
+  <div class="grid gap-x-12 lg:ml-[calc(22vw-2.5rem)] lg:grid-cols-[32.5rem_minmax(0,35rem)]">
+    <h2 id="more-title" class="reveal text-[length:var(--text-title)] leading-[1.1] tracking-[-0.02em] lg:col-start-1 lg:row-start-1">
+      Smaller tools
+    </h2>
+
+    <figure data-more-video class="reveal mt-8 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mt-0" style="--d: 70ms">
+      <video
+        class="shot block aspect-[1440/860] w-full bg-raised"
+        width="1440"
+        height="860"
+        poster={posterImage.src}
+        muted
+        loop
+        playsinline
+        preload="none"
+        aria-label="meshtop showing a 3D map of three hosts, then the agents view"
+      >
+        <source src="/media/meshtop-demo.mp4" type="video/mp4" />
+      </video>
+      <figcaption class="mt-2 flex items-center justify-between gap-4 text-small text-soft">
+        <span>meshtop: three hosts, then the agents view.</span>
+        <button
+          type="button"
+          data-more-toggle
+          aria-label="Pause video"
+          class="-mr-3 grid size-11 shrink-0 place-items-center text-soft transition-[transform,color] duration-150 [transition-timing-function:var(--ease-out)] active:scale-[0.96] hover:text-ink"
+        >
+          <Pause class="size-4" data-icon="pause" aria-hidden="true" />
+          <Play class="hidden size-4" data-icon="play" aria-hidden="true" />
+        </button>
+      </figcaption>
+    </figure>
+
+    <div class="mt-8 flex flex-col gap-10 lg:col-start-1 lg:row-start-2">
+      {groups.map((group, i) => (
+        <div class="reveal" style={`--d: ${(i + 1) * 70}ms`}>
+          <p id={`more-group-${i}`} class="text-small text-soft">{group.label}</p>
+          <ul aria-labelledby={`more-group-${i}`} class="mt-1">
+            {group.items.map((item) => (
+              <li class="grid grid-cols-[1rem_1fr_auto] items-start gap-x-2 pb-3">
+                <span class={`mt-[14px] size-4 rounded-full lg:mt-[10px] ${group.dot}`} aria-hidden="true"></span>
+                <a href={item.href} class="link flex min-h-11 items-center self-start text-ink lg:min-h-9 justify-self-start">{item.name}</a>
+                <span class="flex min-h-11 items-center text-small text-soft lg:min-h-9">{item.value}</span>
+                <p class="col-start-2 col-end-4 max-w-[44ch] text-small text-soft">{item.text}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-more-video]');
+  const video = root?.querySelector('video');
+  const toggle = root?.querySelector<HTMLButtonElement>('[data-more-toggle]');
+
+  if (root && video && toggle) {
+    const motionOk = matchMedia('(prefers-reduced-motion: no-preference)');
+    let paused = !motionOk.matches;
+
+    const sync = () => {
+      toggle.setAttribute('aria-label', paused ? 'Play video' : 'Pause video');
+      toggle.querySelector('[data-icon="pause"]')?.classList.toggle('hidden', paused);
+      toggle.querySelector('[data-icon="play"]')?.classList.toggle('hidden', !paused);
+    };
+    sync();
+
+    new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !paused) video.play().catch(() => {});
+        else video.pause();
+      },
+      { threshold: 0.4 },
+    ).observe(video);
+
+    toggle.addEventListener('click', () => {
+      paused = !paused;
+      if (paused) video.pause();
+      else video.play().catch(() => {});
+      sync();
+    });
+  }
+</script>
