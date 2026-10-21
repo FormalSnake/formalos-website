@@ -1,5 +1,6 @@
 // Mirrors crates/fspec-install/src/catalog.rs, model.rs and spec.rs in formalspec (branch installer).
-// Keep both in step with the Rust source: the hero claims this is the installer's real output.
+// Keep both in step with the Rust source. openSUSE is listed ahead of the installer, which has no
+// catalog entry for it yet.
 
 export type Preset = 'minimal' | 'desktop' | 'gaming' | 'server';
 export type Desktop = 'gnome' | 'kde' | 'cosmic';
@@ -27,6 +28,7 @@ export const DISTROS: Distro[] = [
   { id: 'cachyos', name: 'CachyOS', reason: 'Arch with packages built for current CPUs and a kernel tuned for desktops and games.', release: 'rolling', delivery: 'classic', signedKernel: false, presets: ALL, desktops: ['kde', 'gnome'] },
   { id: 'ubuntu', name: 'Ubuntu', reason: 'Long-term support and the broadest hardware and vendor support.', release: 'fixed', delivery: 'classic', signedKernel: true, presets: ALL, desktops: ['gnome', 'kde'] },
   { id: 'debian', name: 'Debian', reason: 'Stable for years at a time. Nothing changes until you decide to upgrade.', release: 'fixed', delivery: 'classic', signedKernel: true, presets: ALL, desktops: ['gnome', 'kde'] },
+  { id: 'opensuse', name: 'openSUSE Tumbleweed', reason: 'A rolling release that openQA tests before it ships, with btrfs snapshots you can boot back into.', release: 'rolling', delivery: 'classic', signedKernel: true, presets: ALL, desktops: ['kde', 'gnome'] },
   { id: 'void', name: 'Void Linux', reason: 'An independent rolling distro with runit and a package manager that stays out of the way.', release: 'rolling', delivery: 'classic', signedKernel: false, presets: ALL, desktops: ['kde', 'gnome'] },
   { id: 'void-musl', name: 'Void Linux (musl)', reason: 'Void built on musl instead of glibc: smaller and simpler, but some prebuilt apps will not run.', release: 'rolling', delivery: 'classic', signedKernel: false, presets: ['minimal', 'desktop', 'server'], desktops: ['kde', 'gnome'] },
   { id: 'aerynos', name: 'AerynOS', reason: 'Built from scratch by its own tooling. Moss switches each update in atomically, and you can boot back into an earlier state.', release: 'rolling', delivery: 'atomic', signedKernel: false, alpha: true, presets: ['desktop'], desktops: ['gnome', 'kde', 'cosmic'] },
