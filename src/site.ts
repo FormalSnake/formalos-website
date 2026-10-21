@@ -19,3 +19,11 @@ export const REPOS = {
   nothingctl: 'https://github.com/FormalSnake/nothingctl',
   kopuz: 'https://github.com/Kopuz-org/kopuz',
 };
+
+const releases = `${REPOS.formalspec}/releases`;
+
+export const ISO = {
+  url: `${releases}/latest/download/formalspec-installer-amd64.iso`,
+  checksums: `${releases}/latest/download/SHA256SUMS`,
+  releases,
+};

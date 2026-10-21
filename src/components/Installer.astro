@@ -1,5 +1,7 @@
 ---
+import { Download } from '@lucide/astro';
 import { DISTROS } from '../data/installer';
+import { ISO } from '../site';
 import system from '../data/screens/system.txt?raw';
 import disk from '../data/screens/disk-encrypted.txt?raw';
 import running from '../data/screens/install-running.txt?raw';
@@ -11,6 +13,12 @@ import host from '../data/screens/host.txt?raw';
 const escape = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const paint = (screen: string) =>
   escape(screen.replace(/\n$/, '')).replace(/[▌✓●⠧]/g, (c) => `<span class="mark">${c}</span>`);
+
+// The ISO ships as a release asset, so the download only goes live once a release exists. Redeploy after
+// tagging to flip it.
+const released = await fetch('https://api.github.com/repos/FormalStudio/formalspec/releases/latest')
+  .then((r) => r.ok)
+  .catch(() => false);
 
 const steps = [
   { id: 'system', title: 'Choose a system', body: `${DISTROS.length} distros, each with what its release model and kernel mean for you.`, screen: system },
@@ -32,8 +40,21 @@ const steps = [
         and get your machines back.
       </p>
       <p class="mt-4 max-w-[60ch] text-small text-soft">
-        {DISTROS.length} distros, from Fedora and openSUSE to Arch, Void and AerynOS. Coming soon as a bootable image.
+        {DISTROS.length} distros, from Fedora and openSUSE to Arch, Void and AerynOS.
       </p>
+      {released ? (
+        <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+          <a class="btn" href={ISO.url}><Download size={18} aria-hidden="true" />Download the ISO</a>
+          <p class="text-small text-soft">
+            x86_64, about 1.2 GB. Boots from USB with Secure Boot on.{' '}
+            <a class="link" href={ISO.checksums}>SHA256SUMS</a>, <a class="link" href={ISO.releases}>all versions</a>
+          </p>
+        </div>
+      ) : (
+        <p class="mt-4 max-w-[60ch] text-small text-soft">
+          The bootable ISO arrives with the first release, on <a class="link" href={ISO.releases}>GitHub</a>.
+        </p>
+      )}
     </div>
 
     <div class="tour reveal mt-12 grid grid-cols-1 gap-8 lg:mt-14 lg:grid-cols-12 lg:gap-x-10" style="--d: 100ms">
