@@ -1,7 +1,7 @@
 ---
 import { Picture, getImage } from 'astro:assets';
 import { Pause, Play } from '@lucide/astro';
-import { REPOS, SITE } from '../site';
+import { REPOS } from '../site';
 import launcherPoster from '../assets/shots/shell-launcher-poster.png';
 import screensaverPoster from '../assets/shots/shell-screensaver-poster.png';
 import metamorphosis from '../assets/shots/shell-theme-metamorphosis.png';
@@ -106,8 +106,7 @@ const tiles: Tile[] = [
       A desktop shell for Hyprland, written in Rust. One process draws the bar, launcher, panels, notifications, lock screen, greeter and screensaver, and every colour comes from your wallpaper.
     </p>
     <p class="mt-5 max-w-[60ch] text-small text-soft">
-      <span class="font-medium text-ink">Daily driven.</span>{' '}
-      The everyday desktop on both of {SITE.author}'s Linux machines since August 2026. It runs on Hyprland 0.56 or newer and comes to the installer next.
+      Ready for everyday use on Hyprland 0.56 and newer. Coming to the installer next.
     </p>
     <p class="mt-4">
       <a class="link" href={REPOS.formalshell}>Follow FormalShell on GitHub</a>
