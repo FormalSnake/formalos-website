@@ -1,6 +1,6 @@
 ---
 import { Picture } from 'astro:assets';
-import { REPOS, SITE } from '../site';
+import { REPOS } from '../site';
 import ndMac from '../assets/shots/nd-gallery-macos.png';
 import lynkMac from '../assets/shots/lynk-mac.png';
 import messagesThread from '../assets/shots/messages-thread.png';
@@ -103,12 +103,7 @@ const apps = [
       </ul>
 
       <div class="reveal mt-12 max-w-[35rem] text-body text-soft" style="--d: 100ms">
-        <p>Messages talks to a BlueBubbles server that runs on your Mac.</p>
-        <p class="mt-3">
-          The NativeDesktop ports of Messages and FormalMusic add macOS. They are in progress and not merged.
-        </p>
-        <p class="mt-3">Lynk has no release to download yet. FormalMusic does not play video yet.</p>
-        <p class="mt-6">
+        <p>
           <a class="link text-ink" href={REPOS.nativedesktopDocs}>Read the NativeDesktop docs</a>
         </p>
       </div>

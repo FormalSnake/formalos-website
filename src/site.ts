@@ -12,7 +12,7 @@ export const REPOS = {
   formalshell: 'https://github.com/FormalSnake/FormalShell',
   nativedesktop: 'https://github.com/FormalSnake/NativeDesktop',
   nativedesktopDocs: 'https://native.formalsnake.dev',
-  lynk: 'https://github.com/FormalSnake/lynk-browser',
+  lynk: 'https://lynk.formalsnake.dev',
   messages: 'https://github.com/FormalSnake/messages',
   formalmusic: 'https://github.com/FormalSnake/formalmusic',
   meshtop: 'https://github.com/FormalSnake/meshtop',
