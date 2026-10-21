@@ -1,6 +1,5 @@
 // Mirrors crates/fspec-install/src/catalog.rs, model.rs and spec.rs in formalspec (branch installer).
-// Keep both in step with the Rust source. openSUSE is listed ahead of the installer, which has no
-// catalog entry for it yet.
+// Keep both in step with the Rust source: the hero claims this is the installer's real output.
 
 export type Preset = 'minimal' | 'desktop' | 'gaming' | 'server';
 export type Desktop = 'gnome' | 'kde' | 'cosmic';
@@ -11,7 +10,8 @@ export interface Distro {
   reason: string;
   release: 'fixed' | 'rolling';
   delivery: 'classic' | 'image' | 'atomic';
-  alpha?: boolean;
+  prerelease?: string;
+  snapper?: boolean;
   signedKernel: boolean;
   presets: Preset[];
   desktops: Desktop[];
@@ -28,10 +28,13 @@ export const DISTROS: Distro[] = [
   { id: 'cachyos', name: 'CachyOS', reason: 'Arch with packages built for current CPUs and a kernel tuned for desktops and games.', release: 'rolling', delivery: 'classic', signedKernel: false, presets: ALL, desktops: ['kde', 'gnome'] },
   { id: 'ubuntu', name: 'Ubuntu', reason: 'Long-term support and the broadest hardware and vendor support.', release: 'fixed', delivery: 'classic', signedKernel: true, presets: ALL, desktops: ['gnome', 'kde'] },
   { id: 'debian', name: 'Debian', reason: 'Stable for years at a time. Nothing changes until you decide to upgrade.', release: 'fixed', delivery: 'classic', signedKernel: true, presets: ALL, desktops: ['gnome', 'kde'] },
-  { id: 'opensuse', name: 'openSUSE Tumbleweed', reason: 'A rolling release that openQA tests before it ships, with btrfs snapshots you can boot back into.', release: 'rolling', delivery: 'classic', signedKernel: true, presets: ALL, desktops: ['kde', 'gnome'] },
   { id: 'void', name: 'Void Linux', reason: 'An independent rolling distro with runit and a package manager that stays out of the way.', release: 'rolling', delivery: 'classic', signedKernel: false, presets: ALL, desktops: ['kde', 'gnome'] },
   { id: 'void-musl', name: 'Void Linux (musl)', reason: 'Void built on musl instead of glibc: smaller and simpler, but some prebuilt apps will not run.', release: 'rolling', delivery: 'classic', signedKernel: false, presets: ['minimal', 'desktop', 'server'], desktops: ['kde', 'gnome'] },
-  { id: 'aerynos', name: 'AerynOS', reason: 'Built from scratch by its own tooling. Moss switches each update in atomically, and you can boot back into an earlier state.', release: 'rolling', delivery: 'atomic', signedKernel: false, alpha: true, presets: ['desktop'], desktops: ['gnome', 'kde', 'cosmic'] },
+  { id: 'opensuse-tumbleweed', name: 'openSUSE Tumbleweed', reason: 'Rolling, but every update is tested together before it ships, and you can roll back to an earlier state.', release: 'rolling', delivery: 'classic', signedKernel: true, snapper: true, presets: ALL, desktops: ['kde', 'gnome'] },
+  { id: 'opensuse-leap', name: 'openSUSE Leap', reason: "Built from SUSE Linux Enterprise's sources, with each release supported for 24 months.", release: 'fixed', delivery: 'classic', signedKernel: true, snapper: true, presets: ['minimal', 'desktop', 'server'], desktops: ['gnome', 'kde'] },
+  { id: 'aeon', name: 'openSUSE Aeon', reason: 'A GNOME desktop that updates itself daily in the background, with apps from Flatpak and tools in Distrobox.', release: 'rolling', delivery: 'atomic', signedKernel: true, snapper: true, prerelease: 'RC', presets: ['desktop'], desktops: ['gnome'] },
+  { id: 'kalpa-desktop', name: 'openSUSE Kalpa', reason: "Aeon's approach with KDE Plasma: automatic transactional updates, apps from Flatpak and Distrobox.", release: 'rolling', delivery: 'atomic', signedKernel: true, snapper: true, prerelease: 'alpha', presets: ['desktop'], desktops: ['kde'] },
+  { id: 'aerynos', name: 'AerynOS', reason: 'Built from scratch by its own tooling. Moss switches each update in atomically, and you can boot back into an earlier state.', release: 'rolling', delivery: 'atomic', signedKernel: false, prerelease: 'alpha', presets: ['desktop'], desktops: ['gnome', 'kde', 'cosmic'] },
 ];
 
 export const PRESET_LABELS: Record<Preset, string> = {

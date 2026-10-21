@@ -10,6 +10,7 @@ const facts = (d: (typeof DISTROS)[number]) =>
     d.release === 'rolling' ? 'Rolling release' : 'Fixed releases',
     d.delivery === 'image' ? 'bootc image' : d.delivery === 'atomic' ? 'Atomic updates' : 'Classic packages',
     d.signedKernel ? 'Signed kernel' : 'Unsigned kernel',
+    ...(d.snapper ? ['Snapshots'] : []),
   ].join(', ');
 ---
 
@@ -53,7 +54,7 @@ const facts = (d: (typeof DISTROS)[number]) =>
                 <label class="choice-row">
                   <input type="radio" name="distro" value={d.id} checked={d.id === start.distro} class="sr-only" />
                   <span>{d.name}</span>
-                  {(d.alpha || d.delivery !== 'classic') && <span class="text-soft">{d.alpha ? 'alpha' : 'image'}</span>}
+                  {(d.prerelease || d.delivery === 'image') && <span class="text-soft">{d.prerelease ?? 'image'}</span>}
                 </label>
               ))}
             </div>
@@ -127,8 +128,8 @@ const facts = (d: (typeof DISTROS)[number]) =>
     align-items: baseline;
     justify-content: space-between;
     gap: 0.5rem;
-    min-height: 2.125rem;
-    padding: 0.4rem 0.625rem;
+    min-height: 1.875rem;
+    padding: 0.3rem 0.625rem;
     border-radius: 6px;
     cursor: pointer;
     transition: background-color 120ms ease;
@@ -249,6 +250,7 @@ const facts = (d: (typeof DISTROS)[number]) =>
         d.release === 'rolling' ? 'Rolling release' : 'Fixed releases',
         d.delivery === 'image' ? 'bootc image' : d.delivery === 'atomic' ? 'Atomic updates' : 'Classic packages',
         d.signedKernel ? 'Signed kernel' : 'Unsigned kernel',
+        ...(d.snapper ? ['Snapshots'] : []),
       ].join(', ');
 
     let shown: string[] | undefined;
